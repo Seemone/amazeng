@@ -1,0 +1,11 @@
+/* Maze Explorer — styles */
+
+:root {
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
