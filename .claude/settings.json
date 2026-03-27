@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node run.js /tmp/playwright-test-maze-phase2.js)"
+    ]
+  }
+}

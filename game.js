@@ -2,11 +2,6 @@
 "use strict";
 
 (() => {
-  // ── Constants (hardcoded for Phase 1; settings UI comes in Phase 2) ──
-  const MAZE_WIDTH = 20;
-  const MAZE_HEIGHT = 20;
-  const VISIBILITY_RADIUS = 2;
-
   // ── Color palette (read from CSS custom properties at init) ──
   const COLORS = {
     bg: "#000000",
@@ -31,10 +26,20 @@
     ArrowLeft: 3, a: 3, A: 3,
   };
 
+  const MIN_SIZE = 2;
+  const MAX_SIZE = 80;
+  const MAX_SCORES = 10;
+
   // ── Game state ──
   let gameState = null;
   let canvas, ctx;
   let cellSize = 0;
+
+  // Current settings (preserved across games for "Play Again")
+  let currentSettings = { width: 20, height: 20, radius: 2 };
+
+  // ── DOM References ──
+  let startScreen, gameScreen, winScreen, scoreboardScreen;
 
   // ── Grid & Maze Generation ──
 
@@ -60,7 +65,6 @@
     );
     const stack = [];
 
-    // Start from random cell
     const startR = Math.floor(Math.random() * height);
     const startC = Math.floor(Math.random() * width);
     visited[startR][startC] = 1;
@@ -134,7 +138,6 @@
     const w = canvas.width;
     const h = canvas.height;
 
-    // Clear
     ctx.fillStyle = COLORS.bg;
     ctx.fillRect(0, 0, w, h);
 
@@ -195,7 +198,6 @@
     ctx.arc(px, py, pRadius, 0, Math.PI * 2);
     ctx.fill();
 
-    // Reset shadow for HUD
     ctx.shadowBlur = 0;
 
     // Update HUD
@@ -216,15 +218,12 @@
     const dir = DIRECTIONS[dirIndex];
     const { playerRow, playerCol, grid } = gameState;
 
-    // Check wall
     if (grid[playerRow][playerCol].walls[dir.wall]) return;
 
-    // Move player
     gameState.playerRow += dir.dr;
     gameState.playerCol += dir.dc;
     gameState.moveCount++;
 
-    // Reveal fog
     revealCells(
       gameState.grid,
       gameState.playerRow,
@@ -234,84 +233,254 @@
       gameState.width
     );
 
-    // Check win
     if (checkWin(gameState)) {
       gameState.state = "win";
       render();
-      showWinScreen(gameState.moveCount);
+      const isBest = saveScore(gameState.moveCount);
+      showWinScreen(gameState.moveCount, isBest);
       return;
     }
 
     render();
   }
 
-  // ── Win Screen ──
+  // ── Score Manager ──
 
-  function showWinScreen(moveCount) {
-    const existing = document.querySelector(".win-overlay");
-    if (existing) existing.remove();
+  function scoreKey(w, h, r) {
+    return `maze_scores_${w}x${h}_r${r}`;
+  }
 
-    const overlay = document.createElement("section");
-    overlay.className = "win-overlay";
-    overlay.setAttribute("role", "dialog");
-    overlay.setAttribute("aria-label", "You won");
+  function loadScores(w, h, r) {
+    try {
+      const raw = localStorage.getItem(scoreKey(w, h, r));
+      if (!raw) return [];
+      const scores = JSON.parse(raw);
+      if (!Array.isArray(scores)) return [];
+      return scores;
+    } catch {
+      return [];
+    }
+  }
 
-    const heading = document.createElement("h2");
-    heading.textContent = "You Win!";
+  function saveScore(moveCount) {
+    const { width, height, visibilityRadius } = gameState;
+    const key = scoreKey(width, height, visibilityRadius);
+    const scores = loadScores(width, height, visibilityRadius);
+    const entry = {
+      moves: moveCount,
+      date: new Date().toISOString().slice(0, 10),
+    };
 
-    const info = document.createElement("p");
-    info.textContent = `Completed in ${moveCount} moves`;
+    scores.push(entry);
+    scores.sort((a, b) => a.moves - b.moves);
+    const trimmed = scores.slice(0, MAX_SCORES);
 
-    const playAgainBtn = document.createElement("button");
-    playAgainBtn.textContent = "Play Again";
-    playAgainBtn.addEventListener("click", () => {
-      overlay.remove();
-      initGame();
-    });
+    // Check if this score is the new personal best
+    const isBest = trimmed.length > 0 && trimmed[0].moves === moveCount;
 
-    overlay.append(heading, info, playAgainBtn);
-    document.body.appendChild(overlay);
-    playAgainBtn.focus();
+    try {
+      localStorage.setItem(key, JSON.stringify(trimmed));
+    } catch {
+      // localStorage unavailable — degrade gracefully
+    }
+
+    return isBest;
+  }
+
+  // ── Validation ──
+
+  function validateSettings(width, height) {
+    const errors = [];
+
+    if (!Number.isInteger(width) || !Number.isInteger(height)) {
+      errors.push("Width and height must be whole numbers.");
+    } else {
+      if (width < MIN_SIZE || width > MAX_SIZE) {
+        errors.push(`Width must be between ${MIN_SIZE} and ${MAX_SIZE}.`);
+      }
+      if (height < MIN_SIZE || height > MAX_SIZE) {
+        errors.push(`Height must be between ${MIN_SIZE} and ${MAX_SIZE}.`);
+      }
+    }
+
+    return errors;
+  }
+
+  // ── Screen Transitions ──
+
+  function hideAllScreens() {
+    startScreen.hidden = true;
+    gameScreen.hidden = true;
+    winScreen.hidden = true;
+    scoreboardScreen.hidden = true;
+  }
+
+  function showStartScreen() {
+    hideAllScreens();
+    startScreen.hidden = false;
+    if (gameState) {
+      gameState.state = "start";
+    }
+    document.getElementById("start-btn").focus();
+  }
+
+  function showWinScreen(moveCount, isBest) {
+    winScreen.hidden = false;
+    document.getElementById("win-moves").textContent = `Completed in ${moveCount} moves`;
+
+    const bestEl = document.getElementById("win-best");
+    if (isBest) {
+      bestEl.hidden = false;
+    } else {
+      bestEl.hidden = true;
+    }
+
+    document.getElementById("play-again-btn").focus();
+  }
+
+  function showGameScreen() {
+    hideAllScreens();
+    gameScreen.hidden = false;
+  }
+
+  function showScoreboardScreen() {
+    hideAllScreens();
+    scoreboardScreen.hidden = false;
+    refreshScoreboard();
+    document.getElementById("sb-back-btn").focus();
+  }
+
+  function refreshScoreboard() {
+    const sizeVal = document.getElementById("sb-size").value;
+    const radiusVal = parseInt(document.getElementById("sb-radius").value, 10);
+    const [w, h] = sizeVal.split("x").map(Number);
+
+    const scores = loadScores(w, h, radiusVal);
+    const tbody = document.getElementById("scoreboard-body");
+    const noMsg = document.getElementById("no-scores-msg");
+    const table = document.getElementById("scoreboard-table");
+
+    tbody.innerHTML = "";
+
+    if (scores.length === 0) {
+      table.hidden = true;
+      noMsg.hidden = false;
+    } else {
+      table.hidden = false;
+      noMsg.hidden = true;
+      for (let i = 0; i < scores.length; i++) {
+        const tr = document.createElement("tr");
+        const tdRank = document.createElement("td");
+        tdRank.textContent = `${i + 1}`;
+        const tdMoves = document.createElement("td");
+        tdMoves.textContent = `${scores[i].moves}`;
+        const tdDate = document.createElement("td");
+        tdDate.textContent = scores[i].date;
+        tr.append(tdRank, tdMoves, tdDate);
+        tbody.appendChild(tr);
+      }
+    }
   }
 
   // ── Game Initialization ──
 
-  function initGame() {
-    const existing = document.querySelector(".win-overlay");
-    if (existing) existing.remove();
+  function initGame(width, height, radius) {
+    currentSettings = { width, height, radius };
 
-    const grid = generateMaze(MAZE_WIDTH, MAZE_HEIGHT);
+    const grid = generateMaze(width, height);
 
-    // Random start position
-    const playerRow = Math.floor(Math.random() * MAZE_HEIGHT);
-    const playerCol = Math.floor(Math.random() * MAZE_WIDTH);
+    const playerRow = Math.floor(Math.random() * height);
+    const playerCol = Math.floor(Math.random() * width);
 
-    // Random exit position (different from start)
     let exitRow, exitCol;
     do {
-      exitRow = Math.floor(Math.random() * MAZE_HEIGHT);
-      exitCol = Math.floor(Math.random() * MAZE_WIDTH);
+      exitRow = Math.floor(Math.random() * height);
+      exitCol = Math.floor(Math.random() * width);
     } while (exitRow === playerRow && exitCol === playerCol);
 
     gameState = {
       grid,
-      width: MAZE_WIDTH,
-      height: MAZE_HEIGHT,
+      width,
+      height,
       playerRow,
       playerCol,
       exitRow,
       exitCol,
       moveCount: 0,
-      visibilityRadius: VISIBILITY_RADIUS,
+      visibilityRadius: radius,
       state: "playing",
     };
 
+    showGameScreen();
     resizeCanvas();
 
-    // Initial reveal around player
-    revealCells(grid, playerRow, playerCol, VISIBILITY_RADIUS, MAZE_HEIGHT, MAZE_WIDTH);
+    revealCells(grid, playerRow, playerCol, radius, height, width);
 
     render();
+  }
+
+  // ── Start Screen Logic ──
+
+  function getSelectedSize() {
+    const selected = document.querySelector(".preset-btn.selected");
+    if (!selected) return { width: 20, height: 20 };
+
+    const w = selected.dataset.width;
+    const h = selected.dataset.height;
+
+    if (w === "custom") {
+      return {
+        width: parseInt(document.getElementById("custom-width").value, 10),
+        height: parseInt(document.getElementById("custom-height").value, 10),
+      };
+    }
+
+    return { width: parseInt(w, 10), height: parseInt(h, 10) };
+  }
+
+  function handleStartClick() {
+    const sizeError = document.getElementById("size-error");
+    sizeError.hidden = true;
+
+    const { width, height } = getSelectedSize();
+    const radius = parseInt(document.getElementById("radius-select").value, 10);
+
+    const errors = validateSettings(width, height);
+    if (errors.length > 0) {
+      sizeError.textContent = errors.join(" ");
+      sizeError.hidden = false;
+      return;
+    }
+
+    initGame(width, height, radius);
+  }
+
+  function setupPresetButtons() {
+    const buttons = document.querySelectorAll(".preset-btn");
+    const customInputs = document.getElementById("custom-size-inputs");
+
+    for (const btn of buttons) {
+      btn.addEventListener("click", () => {
+        for (const b of buttons) {
+          b.classList.remove("selected");
+        }
+        btn.classList.add("selected");
+
+        if (btn.dataset.width === "custom") {
+          customInputs.hidden = false;
+        } else {
+          customInputs.hidden = true;
+        }
+      });
+    }
+  }
+
+  function setupRadiusSlider() {
+    const slider = document.getElementById("radius-select");
+    const output = document.getElementById("radius-value");
+    slider.addEventListener("input", () => {
+      output.textContent = slider.value;
+    });
   }
 
   // ── Bootstrap ──
@@ -319,6 +488,11 @@
   function setup() {
     canvas = document.getElementById("maze-canvas");
     ctx = canvas.getContext("2d");
+
+    startScreen = document.getElementById("start-screen");
+    gameScreen = document.getElementById("game-screen");
+    winScreen = document.getElementById("win-screen");
+    scoreboardScreen = document.getElementById("scoreboard-screen");
 
     // Read CSS custom properties
     const style = getComputedStyle(document.documentElement);
@@ -328,7 +502,10 @@
     COLORS.player = style.getPropertyValue("--color-player").trim() || COLORS.player;
     COLORS.text = style.getPropertyValue("--color-text").trim() || COLORS.text;
 
+    // Keyboard input
     document.addEventListener("keydown", handleKeydown);
+
+    // Window resize
     window.addEventListener("resize", () => {
       if (gameState && gameState.state === "playing") {
         resizeCanvas();
@@ -336,7 +513,30 @@
       }
     });
 
-    initGame();
+    // Start screen controls
+    setupPresetButtons();
+    setupRadiusSlider();
+
+    document.getElementById("start-btn").addEventListener("click", handleStartClick);
+    document.getElementById("scoreboard-btn").addEventListener("click", showScoreboardScreen);
+
+    // Win screen controls
+    document.getElementById("play-again-btn").addEventListener("click", () => {
+      winScreen.hidden = true;
+      initGame(currentSettings.width, currentSettings.height, currentSettings.radius);
+    });
+    document.getElementById("back-to-menu-btn").addEventListener("click", () => {
+      winScreen.hidden = true;
+      showStartScreen();
+    });
+
+    // Scoreboard controls
+    document.getElementById("sb-back-btn").addEventListener("click", showStartScreen);
+    document.getElementById("sb-size").addEventListener("change", refreshScoreboard);
+    document.getElementById("sb-radius").addEventListener("change", refreshScoreboard);
+
+    // Show start screen
+    showStartScreen();
   }
 
   document.addEventListener("DOMContentLoaded", setup);

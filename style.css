@@ -8,6 +8,7 @@
   --color-player: #00ff88;
   --color-text: #ffffff;
   --color-glow: rgba(0, 255, 255, 0.6);
+  --color-error: #ff4444;
   box-sizing: border-box;
 }
 
@@ -41,6 +42,8 @@ canvas {
   display: block;
 }
 
+/* ── HUD ── */
+
 .hud {
   font-size: 1.25rem;
   letter-spacing: 0.05em;
@@ -49,6 +52,183 @@ canvas {
   padding: 0.5rem 0;
   min-height: 2rem;
 }
+
+/* ── Screens ── */
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  max-width: 480px;
+  width: 100%;
+  padding: 1rem;
+}
+
+.screen[hidden] {
+  display: none;
+}
+
+/* ── Start Screen ── */
+
+.game-title {
+  font-size: 3rem;
+  margin: 0;
+  color: var(--color-wall);
+  text-shadow: 0 0 20px var(--color-glow), 0 0 40px var(--color-glow);
+  letter-spacing: 0.08em;
+}
+
+.settings-group {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  width: 100%;
+}
+
+.settings-group legend {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 0 0.5rem;
+}
+
+.preset-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.preset-btn {
+  flex: 1 1 auto;
+  min-width: 100px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.preset-btn:hover,
+.preset-btn:focus {
+  border-color: var(--color-wall);
+}
+
+.preset-btn.selected {
+  border-color: var(--color-wall);
+  background: var(--color-wall);
+  color: var(--color-bg);
+}
+
+.custom-size-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.custom-size-inputs label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.custom-size-inputs input {
+  width: 5rem;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-text);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.custom-size-inputs input:focus {
+  outline: none;
+  border-color: var(--color-wall);
+}
+
+.error-message {
+  color: var(--color-error);
+  font-size: 0.85rem;
+  margin: 0.5rem 0 0;
+}
+
+/* ── Radius selector ── */
+
+.radius-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.radius-selector label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.radius-selector input[type="range"] {
+  flex: 1;
+  accent-color: var(--color-wall);
+}
+
+.radius-selector output {
+  font-size: 1.1rem;
+  font-weight: bold;
+  min-width: 1.5rem;
+  text-align: center;
+  color: var(--color-wall);
+}
+
+/* ── Action buttons ── */
+
+.start-actions,
+.win-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.primary-btn {
+  font-size: 1.1rem;
+  padding: 0.7rem 2rem;
+  border: 2px solid var(--color-player);
+  border-radius: 4px;
+  background: var(--color-player);
+  color: var(--color-bg);
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.primary-btn:hover,
+.primary-btn:focus {
+  box-shadow: 0 0 15px var(--color-player);
+}
+
+.secondary-btn {
+  font-size: 1rem;
+  padding: 0.6rem 1.5rem;
+  border: 2px solid var(--color-wall);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-wall);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.secondary-btn:hover,
+.secondary-btn:focus {
+  background: var(--color-wall);
+  color: var(--color-bg);
+}
+
+/* ── Win Screen Overlay ── */
 
 .win-overlay {
   position: fixed;
@@ -62,6 +242,10 @@ canvas {
   z-index: 10;
 }
 
+.win-overlay[hidden] {
+  display: none;
+}
+
 .win-overlay h2 {
   font-size: 2.5rem;
   margin: 0;
@@ -72,6 +256,12 @@ canvas {
 .win-overlay p {
   font-size: 1.25rem;
   margin: 0;
+}
+
+.best-indicator {
+  color: var(--color-exit);
+  font-weight: bold;
+  text-shadow: 0 0 10px var(--color-exit);
 }
 
 .win-overlay button {
@@ -89,4 +279,69 @@ canvas {
 .win-overlay button:focus {
   background: var(--color-wall);
   color: var(--color-bg);
+}
+
+/* ── Scoreboard ── */
+
+.screen-title {
+  font-size: 2rem;
+  margin: 0;
+  color: var(--color-wall);
+  text-shadow: 0 0 15px var(--color-glow);
+}
+
+.scoreboard-config {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.scoreboard-config label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.scoreboard-config select {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.scoreboard-config select:focus {
+  outline: none;
+  border-color: var(--color-wall);
+}
+
+.scoreboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+.scoreboard-table th {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 0.5rem;
+}
+
+.scoreboard-table td {
+  padding: 0.5rem;
+  font-size: 0.95rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.scoreboard-table tr:first-child td {
+  color: var(--color-exit);
+  font-weight: bold;
+}
+
+#no-scores-msg {
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
 }

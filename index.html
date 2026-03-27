@@ -8,8 +8,87 @@
 </head>
 <body>
   <main id="app">
-    <section class="hud" id="hud" aria-live="polite"></section>
-    <canvas id="maze-canvas" width="800" height="800"></canvas>
+    <!-- Start Screen -->
+    <section id="start-screen" class="screen" role="region" aria-label="Game settings">
+      <h1 class="game-title">Maze Explorer</h1>
+
+      <fieldset class="settings-group">
+        <legend>Maze Size</legend>
+        <div class="preset-buttons">
+          <button type="button" class="preset-btn" data-width="10" data-height="10">Small (10x10)</button>
+          <button type="button" class="preset-btn selected" data-width="20" data-height="20">Medium (20x20)</button>
+          <button type="button" class="preset-btn" data-width="40" data-height="40">Large (40x40)</button>
+          <button type="button" class="preset-btn" data-width="custom" data-height="custom" id="custom-preset-btn">Custom</button>
+        </div>
+        <div class="custom-size-inputs" id="custom-size-inputs" hidden>
+          <label for="custom-width">Width:</label>
+          <input type="number" id="custom-width" min="2" max="80" value="20">
+          <label for="custom-height">Height:</label>
+          <input type="number" id="custom-height" min="2" max="80" value="20">
+        </div>
+        <p class="error-message" id="size-error" role="alert" hidden></p>
+      </fieldset>
+
+      <fieldset class="settings-group">
+        <legend>Visibility Radius</legend>
+        <div class="radius-selector">
+          <label for="radius-select">Radius:</label>
+          <input type="range" id="radius-select" min="1" max="5" value="2">
+          <output for="radius-select" id="radius-value">2</output>
+        </div>
+      </fieldset>
+
+      <div class="start-actions">
+        <button type="button" id="start-btn" class="primary-btn">Start Game</button>
+        <button type="button" id="scoreboard-btn" class="secondary-btn">View Scoreboard</button>
+      </div>
+    </section>
+
+    <!-- Game Screen -->
+    <section id="game-screen" class="screen" hidden>
+      <section class="hud" id="hud" aria-live="polite"></section>
+      <canvas id="maze-canvas" width="800" height="800"></canvas>
+    </section>
+
+    <!-- Win Screen Overlay -->
+    <section id="win-screen" class="win-overlay" role="dialog" aria-label="You won" hidden>
+      <h2>You Win!</h2>
+      <p id="win-moves"></p>
+      <p id="win-best" class="best-indicator" hidden>New Personal Best!</p>
+      <div class="win-actions">
+        <button type="button" id="play-again-btn">Play Again</button>
+        <button type="button" id="back-to-menu-btn">Back to Menu</button>
+      </div>
+    </section>
+
+    <!-- Scoreboard Screen -->
+    <section id="scoreboard-screen" class="screen" role="region" aria-label="Scoreboard" hidden>
+      <h2 class="screen-title">Scoreboard</h2>
+      <div class="scoreboard-config">
+        <label for="sb-size">Size:</label>
+        <select id="sb-size">
+          <option value="10x10">10x10</option>
+          <option value="20x20" selected>20x20</option>
+          <option value="40x40">40x40</option>
+        </select>
+        <label for="sb-radius">Radius:</label>
+        <select id="sb-radius">
+          <option value="1">1</option>
+          <option value="2" selected>2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+        </select>
+      </div>
+      <table class="scoreboard-table" id="scoreboard-table">
+        <thead>
+          <tr><th>#</th><th>Moves</th><th>Date</th></tr>
+        </thead>
+        <tbody id="scoreboard-body"></tbody>
+      </table>
+      <p id="no-scores-msg" hidden>No scores yet for this configuration.</p>
+      <button type="button" id="sb-back-btn" class="secondary-btn">Back to Menu</button>
+    </section>
   </main>
   <script src="game.js"></script>
 </body>

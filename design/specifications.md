@@ -1,4 +1,4 @@
-# Specifications: Maze Explorer
+# Specifications: A-maze-ng
 
 ## System Context
 
@@ -7,10 +7,11 @@
 | Layer | Technology | Rationale |
 | ----- | ---------- | --------- |
 | Markup | HTML5 | Semantic page shell, no framework needed |
-| Styling | CSS3 | Layout, start/win screen UI, CSS custom properties for neon color palette |
+| Styling | CSS3 | Layout, start/win screen UI, CSS custom properties for neon color palette, responsive design |
 | Logic | Vanilla JavaScript (ES2020+) | All game logic — no dependencies |
 | Rendering | HTML Canvas 2D API | Performant grid rendering, native glow effects via `shadowBlur` |
 | Persistence | localStorage | Browser-local scoreboard, no backend |
+| Distribution | POSIX shell script | Inlines CSS/JS into single HTML file for sharing |
 
 ### Deployment Architecture
 
@@ -21,26 +22,30 @@ browsergame/
   index.html
   style.css
   game.js
+  build.sh          # produces amazeng.html
+  amazeng.html      # generated — single-file distribution
 ```
 
 ## User Experience Architecture
 
 ### User Persona
 
-**Casual puzzle player**: Opens a URL, wants to play immediately. No sign-up, no install. Expects intuitive keyboard controls and a clean modern look. Motivated by self-improvement (beating their own scores).
+**Casual puzzle player**: Opens a URL or taps a shared file, wants to play immediately. No sign-up, no install. Expects intuitive controls (keyboard on desktop, swipe on mobile) and a clean modern look. Motivated by self-improvement (beating their own efficiency scores).
 
 ### User Journey
 
-1. Load page → see start screen with game title and settings
-2. Choose maze size and visibility radius → click Start
-3. Navigate the maze using keyboard → fog reveals as they explore
-4. Reach the exit → see score, personal best, option to replay or return to menu
-5. Optionally view scoreboard from start screen
+1. Load page → see start screen with game title "A-maze-ng" and settings
+2. Choose maze size and visibility radius → click/tap Start
+3. Navigate the maze using keyboard or swipe → fog reveals as they explore
+4. Reach the exit → see efficiency score, move count, optimal path on maze, option to replay or return to menu
+5. Optionally abort mid-game → see full maze with optimal path, then return to menu
+6. Optionally view scoreboard from start screen
 
 ### Interaction Patterns
 
-- **Input model**: Discrete keyboard events (keydown). One key = one move. No mouse interaction during gameplay.
-- **Feedback**: Immediate visual update on every move (canvas redraws). Move counter updates in real time.
+- **Desktop input**: Discrete keyboard events (keydown). One key = one move. No mouse interaction during gameplay.
+- **Mobile input**: Touch swipe gestures. Continuous movement while finger is held and dragged. Direction changes on swipe angle change. Walls stop movement without lifting finger.
+- **Feedback**: Immediate visual update on every move (canvas redraws). Move counter updates in real time. Directional arrow shows swipe direction on mobile.
 - **Orientation**: Exit marker always visible through fog — player always knows which direction to aim for.
 
 ### Error Experience
@@ -54,16 +59,23 @@ browsergame/
 
 ```
 START_SCREEN ──[Start]──> PLAYING ──[Reach Exit]──> WIN_SCREEN
-     ^                                                   │
-     └──────────────[Back to Menu]───────────────────────┘
-     ^                                                   │
-     └──────────────[Play Again]─────> PLAYING ──────────┘
+     ^                       │                          │
+     │                       │                          │
+     │                   [Abort]                        │
+     │                       │                          │
+     │                       v                          │
+     │                  ABORT_SCREEN                    │
+     │                       │                          │
+     └──[Back to Menu]───────┘──────────────────────────┘
+     ^                                                  │
+     └──────────────[Play Again]─────> PLAYING ─────────┘
 ```
 
 States:
 - **START_SCREEN**: Settings UI visible. Canvas may show decorative background.
-- **PLAYING**: Canvas renders maze, player, exit, fog. Keyboard input active. HUD shows move count.
-- **WIN_SCREEN**: Overlay with score, personal best status, navigation buttons.
+- **PLAYING**: Canvas renders maze, player, exit, fog. Keyboard/touch input active. HUD shows move count. Abort button visible.
+- **WIN_SCREEN**: Overlay with efficiency score, move count, optimal path length, personal best status, navigation buttons. Maze fully revealed with optimal path drawn in magenta.
+- **ABORT_SCREEN**: Full maze revealed with optimal path drawn in magenta. "Back to Menu" button to complete abort.
 
 ### Module Breakdown (within game.js)
 
@@ -71,11 +83,13 @@ States:
 | ------ | -------------- |
 | Maze Generator | Recursive backtracker algorithm, produces grid data structure |
 | Grid Model | 2D cell array, wall states, revealed states, player/exit positions |
-| Renderer | Canvas drawing — background, walls, fog, exit beacon, player, HUD |
-| Input Handler | Keyboard event listener, movement validation, move counting |
+| Pathfinder | BFS shortest path from start to exit, stores path as coordinate array |
+| Renderer | Canvas drawing — background, walls, fog, exit beacon, player, optimal path, directional arrow, HUD |
+| Input Handler | Keyboard event listener, touch/swipe gesture handler, movement validation, move counting |
 | Fog Controller | Visibility radius logic, permanent cell reveal on movement |
-| Score Manager | localStorage read/write, top-10 per config, personal best detection |
-| UI Controller | Start screen, win screen, state transitions, settings form |
+| Score Manager | localStorage read/write, efficiency calculation, top-10 per config, personal best detection |
+| UI Controller | Start screen, win screen, abort screen, state transitions, settings form |
+| Touch Controller | Swipe gesture detection, continuous movement, direction change, wall collision during drag |
 
 ### Grid Data Model
 
@@ -97,7 +111,9 @@ GameState {
   exitCol: int
   moveCount: int
   visibilityRadius: int
-  state: "start" | "playing" | "win"
+  optimalPath: [{row, col}]  // BFS result, stored at generation time
+  optimalPathLength: int     // number of steps in shortest path
+  state: "start" | "playing" | "win" | "abort"
 }
 ```
 
@@ -132,6 +148,34 @@ function generateMaze(width, height):
 
 Uses an explicit stack (not recursion) to handle 80x80 grids (6400 cells) without stack overflow.
 
+### BFS Shortest Path Algorithm
+
+Computed once at maze generation time, stored in `gameState.optimalPath`.
+
+```
+function findShortestPath(grid, startRow, startCol, exitRow, exitCol):
+  queue = [{row: startRow, col: startCol, path: [{row: startRow, col: startCol}]}]
+  visited = Set()
+  visited.add(key(startRow, startCol))
+
+  while queue is not empty:
+    current = queue.dequeue()
+
+    if current.row == exitRow and current.col == exitCol:
+      return current.path
+
+    for each direction in [top, right, bottom, left]:
+      if not wallBlocks(grid, current.row, current.col, direction):
+        nr, nc = current.row + dir.dr, current.col + dir.dc
+        if not visited.has(key(nr, nc)):
+          visited.add(key(nr, nc))
+          queue.enqueue({row: nr, col: nc, path: [...current.path, {row: nr, col: nc}]})
+
+  return []  // should never happen in a perfect maze
+```
+
+**Optimization**: Instead of copying full paths, store parent pointers and reconstruct path at the end. Memory: O(W*H) visited set + O(W*H) parent map. Time: O(W*H).
+
 ### Visibility Calculation
 
 When player moves to cell (r, c) with radius R:
@@ -153,11 +197,84 @@ On each move:
 
 1. Clear canvas (fill black)
 2. For each cell in grid:
-   - If revealed: draw open passages (dark), draw walls (neon color + shadowBlur glow)
+   - If revealed (or state is win/abort where all cells shown): draw open passages (dark), draw walls (neon color + shadowBlur glow)
    - If not revealed: skip (black background shows through)
-3. Draw exit marker at exit cell position (always, regardless of revealed state). Gold/orange with strong shadowBlur glow.
-4. Draw player marker at player cell position. Bright contrasting color.
-5. Draw HUD: move counter text overlay.
+3. If state is win or abort: draw optimal path cells (magenta fill with glow)
+4. Draw exit marker at exit cell position (always, regardless of revealed state). Gold/orange with strong shadowBlur glow.
+5. Draw player marker at player cell position. Bright contrasting color.
+6. If swipe active: draw directional arrow around player circle.
+7. Draw HUD: move counter text overlay.
+
+### Optimal Path Rendering
+
+When displayed (win or abort states):
+
+```
+function drawOptimalPath(path):
+  ctx.fillStyle = COLORS.pathHighlight  // magenta
+  ctx.shadowColor = COLORS.pathHighlight
+  ctx.shadowBlur = 6
+
+  for each {row, col} in path:
+    x = col * cellSize + cellSize * 0.25
+    y = row * cellSize + cellSize * 0.25
+    w = cellSize * 0.5
+    h = cellSize * 0.5
+    ctx.fillRect(x, y, w, h)
+```
+
+Small centered squares in each path cell, drawn before player/exit markers so they appear beneath.
+
+### Directional Arrow Rendering
+
+During active swipe, draw a small triangle pointing in the movement direction, offset from the player circle edge:
+
+```
+function drawDirectionArrow(playerCol, playerRow, direction):
+  // Position arrow at edge of player circle in the movement direction
+  // Triangle pointing outward, 6-8px size
+  // Same color as player (green) with slight glow
+```
+
+### Touch/Swipe Input System
+
+```
+State:
+  touchActive: bool
+  touchStartX, touchStartY: number
+  lastDirection: int | null
+  moveTimer: interval ID
+
+on touchstart(event):
+  touchActive = true
+  touchStartX = event.touches[0].clientX
+  touchStartY = event.touches[0].clientY
+  lastDirection = null
+  preventDefault()
+
+on touchmove(event):
+  dx = event.touches[0].clientX - touchStartX
+  dy = event.touches[0].clientY - touchStartY
+  direction = dominantDirection(dx, dy)  // threshold: > 20px movement
+
+  if direction != lastDirection:
+    lastDirection = direction
+    clearInterval(moveTimer)
+    movePlayer(direction)  // immediate first move
+    moveTimer = setInterval(() => movePlayer(direction), 150ms)  // repeat
+
+  // Update reference point for continuous tracking
+  touchStartX = event.touches[0].clientX
+  touchStartY = event.touches[0].clientY
+  preventDefault()
+
+on touchend:
+  touchActive = false
+  clearInterval(moveTimer)
+  lastDirection = null
+```
+
+Movement repeat rate: ~150ms (6-7 cells/second) for comfortable continuous movement.
 
 ### Cell Size Calculation
 
@@ -165,23 +282,31 @@ On each move:
 cellSize = min(canvasWidth, canvasHeight) / max(gridWidth, gridHeight)
 ```
 
-Canvas sized to fill most of the viewport via CSS, with padding for HUD.
+Canvas sized to fill most of the viewport via CSS, with padding for HUD. On mobile, canvas fills available width minus safe area insets.
+
+### Efficiency Score Calculation
+
+```
+efficiency = (optimalPathLength / moveCount) * 100
+```
+
+Displayed as percentage rounded to one decimal place (e.g., "87.3%"). Perfect score is 100% (player took the optimal path). Score can be very low for wandering players.
 
 ### Scoring & Persistence
 
-**localStorage key format**: `maze_scores_<width>x<height>_r<radius>`
+**localStorage key format**: `amazeng_scores_<width>x<height>_r<radius>`
 
-Example: `maze_scores_20x20_r2`
+Example: `amazeng_scores_20x20_r2`
 
 **Stored value**: JSON array of top 10 entries:
 ```
 [
-  { "moves": 142, "date": "2026-03-27" },
-  { "moves": 156, "date": "2026-03-26" }
+  { "efficiency": 87.3, "moves": 42, "size": "20x20", "date": "2026-03-27" },
+  { "efficiency": 73.1, "moves": 56, "size": "20x20", "date": "2026-03-26" }
 ]
 ```
 
-Sorted ascending by moves. On game win, insert if qualifies for top 10, trim to 10.
+Sorted descending by efficiency, then ascending by moves. On game win, insert if qualifies for top 10, trim to 10.
 
 ### Color Palette (CSS Custom Properties)
 
@@ -189,17 +314,63 @@ Sorted ascending by moves. On game win, insert if qualifies for top 10, trim to 
 :root {
   --color-bg: #000000;
   --color-wall: #00ffff;        /* cyan neon */
-  --color-wall-alt: #ff00ff;    /* magenta neon — for variety or theming */
+  --color-wall-alt: #ff00ff;    /* magenta neon — used for optimal path */
   --color-exit: #ffaa00;        /* warm gold/orange */
   --color-player: #00ff88;      /* electric green */
   --color-text: #ffffff;
   --color-glow: rgba(0, 255, 255, 0.6);
+  --color-path: #ff00ff;        /* magenta — optimal path highlight */
 }
+```
+
+### Responsive Layout Strategy
+
+**Breakpoints**:
+- Desktop: >= 768px width — current layout, keyboard controls
+- Mobile: < 768px width — stacked layout, larger touch targets, swipe controls
+
+**Mobile adaptations**:
+- Start screen: full-width form, larger buttons (min 44px tap targets)
+- Canvas: fills viewport width minus 16px padding, height adjusts proportionally
+- HUD: repositioned above canvas, larger font
+- Abort button: fixed position, large tap target, semi-transparent
+- Win/abort screens: full-viewport overlay with larger text and buttons
+- Scoreboard: horizontally scrollable table if needed
+
+**Viewport meta**: Already present (`width=device-width, initial-scale=1.0`). Add `user-scalable=no` to prevent zoom conflicts with swipe.
+
+### Build Script
+
+```bash
+#!/bin/sh
+# build.sh — produces amazeng.html with inlined CSS and JS
+set -e
+
+CSS=$(cat style.css)
+JS=$(cat game.js)
+
+sed -e '/<link rel="stylesheet".*>/r /dev/stdin' \
+    -e '/<link rel="stylesheet".*>/d' \
+    index.html <<EOF_CSS | \
+sed -e '/<script src="game.js".*>/r /dev/stdin' \
+    -e '/<script src="game.js".*>/d' > amazeng.html <<EOF_JS
+<style>
+$CSS
+</style>
+EOF_CSS
+<script>
+$JS
+</script>
+EOF_JS
+
+echo "Built amazeng.html ($(wc -c < amazeng.html | tr -d ' ') bytes)"
 ```
 
 ## Cross-Cutting Concerns
 
-- **Performance**: Iterative maze generation avoids stack overflow. Canvas redraw scoped to changed state (or full redraw kept under 16ms by simplicity of drawing).
+- **Performance**: Iterative maze generation avoids stack overflow. BFS uses parent-pointer reconstruction to avoid path copying. Canvas redraw scoped to changed state (or full redraw kept under 16ms by simplicity of drawing).
 - **Keyboard conflict prevention**: `preventDefault()` on arrow keys during PLAYING state to avoid page scroll.
-- **Responsive canvas**: Canvas dimensions recalculated on window resize, cell size recomputed, full redraw triggered.
+- **Touch conflict prevention**: `preventDefault()` on touch events during PLAYING state to avoid scroll/zoom.
+- **Responsive canvas**: Canvas dimensions recalculated on window resize and orientation change, cell size recomputed, full redraw triggered.
 - **Graceful degradation**: If localStorage is unavailable, catch errors silently — game functions without persistence.
+- **Distribution**: `build.sh` produces `amazeng.html` which is fully self-contained and can be shared as a file attachment.
