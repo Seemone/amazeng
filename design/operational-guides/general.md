@@ -22,29 +22,30 @@
 
 ### Interfaces and Usage
 
-This guide covers internal engine concerns not directly exposed as user-facing gameplay features.
-
-- **Maze generation**: Recursive backtracker (iterative stack implementation). Called once per game start. Produces a perfect maze (all cells connected, no loops).
-- **Canvas rendering**: Full redraw on each player move. Draw order: black fill → revealed walls (neon + glow) → exit beacon → player → HUD.
-- **Cell scaling**: `cellSize = min(canvasWidth, canvasHeight) / max(gridWidth, gridHeight)`. Recalculated on window resize.
+- **Maze generation** (`generateMaze(width, height)`): Iterative stack-based recursive backtracker. Returns a 2D grid of cell objects with wall booleans. Produces a perfect maze (all cells reachable, no loops). Called once per game start in `initGame()`.
+- **Canvas rendering** (`render()`): Full redraw on each player move. Draw order: black fill, revealed walls (cyan neon + `shadowBlur: 8`), exit beacon (gold + `shadowBlur: 20`), player (green + `shadowBlur: 12`), HUD text update.
+- **Cell scaling** (`calculateCellSize()`): `Math.floor(Math.min(viewportW - 40, viewportH - 100) / Math.max(gridWidth, gridHeight))`. Canvas element resized to `cellSize * grid` dimensions. Recalculated on window resize.
 
 ### Configuration
 
-- **Color palette**: Defined as CSS custom properties in `style.css` (`:root` block). Change `--color-wall`, `--color-exit`, `--color-player` to retheme.
-- **Canvas size**: Set via CSS to fill viewport with padding. JS reads `canvas.width`/`canvas.height` for rendering calculations.
+- **Color palette**: Defined as CSS custom properties in `style.css` (`:root` block). JS reads them at init via `getComputedStyle`. Change `--color-wall`, `--color-exit`, `--color-player` to retheme.
+- **Canvas size**: Computed dynamically from viewport minus padding. Canvas `width`/`height` attributes set in JS; CSS keeps it `display: block`.
+- **Maze constants**: `MAZE_WIDTH`, `MAZE_HEIGHT`, `VISIBILITY_RADIUS` hardcoded at top of IIFE in `game.js`. Will be replaced by settings UI in Phase 2.
 
 ### Verification and Smoke Tests
 
-- Load `index.html` in browser — canvas should appear with black background.
-- Start a game — maze walls should render with neon glow.
-- Resize browser window — canvas and cell sizes should adapt.
-- Generate several mazes — each should be visually different.
+- Load `index.html` in browser — canvas appears with black background, neon cyan walls glowing, gold exit beacon, green player dot
+- Start a game — maze walls render with glow, fog hides unexplored areas
+- Resize browser window — canvas and cell sizes adapt, full redraw occurs
+- Generate several mazes (refresh page) — each is visually different
+- Verify no console errors in browser devtools
 
 ### Monitoring and Failure Modes
 
 - **Console errors**: Check browser dev console for JS errors on load and during gameplay.
-- **Rendering artifacts**: Sub-pixel lines on large mazes — mitigate by flooring cell size calculations.
-- **Performance**: If canvas redraw feels sluggish on 80x80, profile `render()` function in browser devtools.
+- **Rendering artifacts**: Sub-pixel lines on large mazes — mitigated by `Math.floor` in cell size calculations.
+- **Performance**: If canvas redraw feels sluggish on 80x80 (when enabled), profile `render()` in browser devtools.
+- **CSS property read failure**: Falls back to hardcoded hex values in `COLORS` object.
 
 ### Rollback and Recovery
 

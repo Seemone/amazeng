@@ -15,74 +15,65 @@
 - `guide:gameplay`
 
 ### Covered Requirement IDs
-- `RQ-001` — Size selection (presets + custom)
-- `RQ-002` — Visibility radius selection
-- `RQ-005` — Exit always visible through fog
-- `RQ-006` — Fog of war at game start
-- `RQ-007` — Visibility radius reveal (Manhattan distance)
-- `RQ-008` — Arrow key and WASD movement
-- `RQ-009` — Wall collision does not count as move
-- `RQ-010` — Move counter display
-- `RQ-011` — Win on reaching exit
-- `RQ-012` — Win screen with score and navigation
-- `RQ-013` — Scoreboard in localStorage (top 10 per config)
-- `RQ-014` — Scoreboard viewable from start screen
-- `RQ-018` — Custom size capped at 80x80
+- `RQ-001` — Size selection (presets + custom) — Phase 2
+- `RQ-002` — Visibility radius selection — Phase 2
+- `RQ-005` — Exit always visible through fog — **Phase 1 Complete**
+- `RQ-006` — Fog of war at game start — **Phase 1 Complete**
+- `RQ-007` — Visibility radius reveal (Manhattan distance) — **Phase 1 Complete**
+- `RQ-008` — Arrow key and WASD movement — **Phase 1 Complete**
+- `RQ-009` — Wall collision does not count as move — **Phase 1 Complete**
+- `RQ-010` — Move counter display — **Phase 1 Complete**
+- `RQ-011` — Win on reaching exit — **Phase 1 Complete**
+- `RQ-012` — Win screen with score and navigation — Phase 2
+- `RQ-013` — Scoreboard in localStorage (top 10 per config) — Phase 2
+- `RQ-014` — Scoreboard viewable from start screen — Phase 2
+- `RQ-018` — Custom size capped at 80x80 — Phase 2
 
 ### Interfaces and Usage
 
-#### Start Screen
-- **Size presets**: Small (10x10), Medium (20x20), Large (40x40) — radio buttons or similar selector
-- **Custom size**: Width and height number inputs, visible when Custom is selected. Values must be 1–80.
-- **Visibility radius**: Slider or dropdown, range 1–5, default 2
-- **Start button**: Validates inputs, generates maze, transitions to PLAYING state
-- **Scoreboard link**: Opens scoreboard view for the currently selected configuration
+#### Gameplay (Phase 1 — Implemented)
+- **Controls**: Arrow keys (Up/Down/Left/Right) and WASD. One keypress = one cell move. `preventDefault()` blocks page scroll during gameplay.
+- **Wall collision**: Moving toward a wall has no effect; move counter does not increment. Wall presence checked via `grid[row][col].walls[direction]`.
+- **Fog of war**: All cells start with `revealed: false`. Player movement reveals cells within visibility radius using Manhattan distance (`|dr| + |dc| <= radius`). Reveal is permanent.
+- **Exit beacon**: Drawn unconditionally in `render()` regardless of `revealed` state. Gold/orange circle with strong `shadowBlur: 20` glow.
+- **Move counter**: Displayed in `<section class="hud" id="hud">` with `aria-live="polite"`. Updated on each successful move via `render()`.
+- **Win detection**: `checkWin()` triggers when `playerRow === exitRow && playerCol === exitCol`. Transitions state to `"win"`, shows overlay.
 
-#### Gameplay
-- **Controls**: Arrow keys (Up/Down/Left/Right) and WASD. One keypress = one cell move.
-- **Wall collision**: Pressing toward a wall has no effect, move counter does not increment.
-- **Fog of war**: All cells hidden at start. Player movement reveals cells within visibility radius (Manhattan distance). Reveal is permanent.
-- **Exit beacon**: Visible at all times through fog. Gold/orange glow effect. Player navigates toward it.
-- **Move counter**: Displayed as HUD on or near the canvas. Updates on each successful move.
+#### Start Screen (Phase 2 — Not Yet Implemented)
+- Size presets, custom size, visibility radius, start button, scoreboard link
 
-#### Win Screen
-- Triggered when player enters the exit cell
-- Displays: move count, "New best!" if it's a top-10 score for this configuration
-- Buttons: "Play Again" (same settings), "Back to Menu" (return to start screen)
+#### Win Screen (Phase 1 — Partial)
+- Shows move count and "Play Again" button
+- Phase 2 will add: personal best indication, "Back to Menu" button, score persistence
 
-#### Scoreboard
-- Top 10 scores per configuration (size + radius combination)
-- Each entry: move count and date
-- Sorted ascending by move count (lower = better)
-- Persisted in localStorage, key format: `maze_scores_<W>x<H>_r<R>`
+#### Scoreboard (Phase 2 — Not Yet Implemented)
+- localStorage persistence, top 10 per config, viewable from start screen
 
 ### Configuration
 
-- **Size presets**: Hardcoded in HTML/JS. To add/change presets, modify the start screen markup and the corresponding JS mapping.
-- **Visibility radius range**: 1–5 hardcoded. Adjustable in JS constants.
-- **Max custom size**: 80x80 hardcoded. Adjustable in JS validation logic.
-- **Scoreboard capacity**: 10 entries per config. Adjustable in score manager.
+- **Maze size**: Hardcoded `MAZE_WIDTH = 20`, `MAZE_HEIGHT = 20` in Phase 1. Phase 2 adds settings UI.
+- **Visibility radius**: Hardcoded `VISIBILITY_RADIUS = 2` in Phase 1. Phase 2 adds 1–5 selection.
+- **Max custom size**: 80x80, enforced in Phase 2 validation.
+- **Scoreboard capacity**: 10 entries per config, implemented in Phase 2.
 
 ### Verification and Smoke Tests
 
-- Select each size preset → start game → verify grid dimensions match
-- Enter custom size 15x25 → verify non-square maze works
-- Enter custom size 0 or 81 → verify validation error appears
-- Set radius to 1 → verify tight visibility (only adjacent cells)
-- Set radius to 5 → verify wide visibility area
-- Play to completion → verify win screen appears with correct move count
-- Check scoreboard → verify score was saved
-- Reload page → verify score persists
-- Play same config again with more moves → verify ordering is correct
-- Play different config → verify separate scoreboard
+Phase 1 tests (manual):
+- Load page — maze renders immediately, player (green) and exit (gold) visible
+- Press arrow keys and WASD — player moves one cell per keypress
+- Move into wall — nothing happens, move counter unchanged
+- Move into open passage — player moves, counter increments, fog reveals
+- Observe fog — diamond-shaped reveal around player, unrevealed areas are black
+- Exit beacon — visible from game start regardless of fog state
+- Reach exit — win overlay appears with move count and Play Again button
+- Click Play Again — new maze generated, game restarts
 
 ### Monitoring and Failure Modes
 
-- **localStorage full**: `QuotaExceededError` caught by try/catch. Game continues, score not saved. No user-visible error (silent degradation).
-- **localStorage disabled**: Same graceful degradation — game plays normally without persistence.
-- **Invalid form input**: Inline error messaging prevents game start until corrected.
+- **localStorage full**: `QuotaExceededError` caught by try/catch (Phase 2). Game continues, score not saved.
+- **localStorage disabled**: Same graceful degradation (Phase 2).
+- **Invalid form input**: Inline error messaging prevents game start (Phase 2).
 
 ### Rollback and Recovery
 
-- **Scoreboard corruption**: If localStorage data is corrupted, clearing the specific key (or all site data) resets the scoreboard. Game remains functional.
-- **Clear all scores**: User can clear via browser devtools (Application → Local Storage) or a future "Clear Scores" button if desired.
+- **Scoreboard corruption** (Phase 2): Clearing localStorage key resets scoreboard. Game remains functional.
