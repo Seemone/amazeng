@@ -1,6 +1,13 @@
 /* Maze Explorer — styles */
 
 :root {
+  --color-bg: #000000;
+  --color-wall: #00ffff;
+  --color-wall-alt: #ff00ff;
+  --color-exit: #ffaa00;
+  --color-player: #00ff88;
+  --color-text: #ffffff;
+  --color-glow: rgba(0, 255, 255, 0.6);
   box-sizing: border-box;
 }
 
@@ -8,4 +15,78 @@
 *::before,
 *::after {
   box-sizing: inherit;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: "Segoe UI", system-ui, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+canvas {
+  display: block;
+}
+
+.hud {
+  font-size: 1.25rem;
+  letter-spacing: 0.05em;
+  color: var(--color-text);
+  text-align: center;
+  padding: 0.5rem 0;
+  min-height: 2rem;
+}
+
+.win-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 10;
+}
+
+.win-overlay h2 {
+  font-size: 2.5rem;
+  margin: 0;
+  color: var(--color-exit);
+  text-shadow: 0 0 20px var(--color-exit), 0 0 40px var(--color-exit);
+}
+
+.win-overlay p {
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.win-overlay button {
+  font-size: 1rem;
+  padding: 0.6rem 1.5rem;
+  border: 2px solid var(--color-wall);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-wall);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.win-overlay button:hover,
+.win-overlay button:focus {
+  background: var(--color-wall);
+  color: var(--color-bg);
 }
