@@ -13,7 +13,8 @@
       "Bash(git push:*)",
       "Bash(gh api:*)",
       "Bash(git merge:*)",
-      "Bash(chmod +x /Users/elf/repos/browsergame/deploy.sh)"
+      "Bash(chmod +x /Users/elf/repos/browsergame/deploy.sh)",
+      "Bash(sh /Users/elf/repos/browsergame/deploy.sh)"
     ]
   }
 }

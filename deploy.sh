@@ -5,6 +5,12 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# Add cache-busting query strings to CSS and JS references
+STAMP=$(date +%s)
+sed -i.bak "s|href=\"style.css\"|href=\"style.css?v=$STAMP\"|" index.html
+sed -i.bak "s|src=\"game.js\"|src=\"game.js?v=$STAMP\"|" index.html
+rm -f index.html.bak
+
 # Build the single-file distribution
 sh build.sh
 
