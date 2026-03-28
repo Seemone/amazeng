@@ -29,15 +29,15 @@
 - `RQ-013` — Scoreboard in localStorage (top 10 per config) — **Phase 2 Complete**
 - `RQ-014` — Scoreboard viewable from start screen — **Phase 2 Complete**
 - `RQ-018` — Custom size capped at 80x80 — **Phase 2 Complete**
-- `RQ-019` — Abort game with path reveal — Phase 3
-- `RQ-020` — BFS shortest path computation — Phase 3
-- `RQ-021` — Optimal path visualization (magenta) — Phase 3
-- `RQ-022` — Efficiency score (shortest/moves as %) — Phase 3
-- `RQ-023` — Scoreboard ranked by efficiency — Phase 3
-- `RQ-024` — Touch/swipe controls — Phase 3
-- `RQ-025` — Directional arrow indicator — Phase 3
-- `RQ-026` — Responsive layout (6"+ screens) — Phase 3
-- `RQ-027` — Rebrand to "A-maze-ng" — Phase 3
+- `RQ-019` — Abort game with path reveal — **Phase 3 Complete**
+- `RQ-020` — BFS shortest path computation — **Phase 3 Complete**
+- `RQ-021` — Optimal path visualization (magenta) — **Phase 3 Complete**
+- `RQ-022` — Efficiency score (shortest/moves as %) — **Phase 3 Complete**
+- `RQ-023` — Scoreboard ranked by efficiency — **Phase 3 Complete**
+- `RQ-024` — Touch/swipe controls — **Phase 3 Complete**
+- `RQ-025` — Directional arrow indicator — **Phase 3 Complete**
+- `RQ-026` — Responsive layout (6"+ screens) — **Phase 3 Complete**
+- `RQ-027` — Rebrand to "A-maze-ng" — **Phase 3 Complete**
 
 ### Interfaces and Usage
 
@@ -56,34 +56,34 @@
 - **Move counter**: Displayed in `<section class="hud" id="hud">` with `aria-live="polite"`. Updated on each successful move via `render()`.
 - **Win detection**: `checkWin()` triggers when `playerRow === exitRow && playerCol === exitCol`. Saves score, transitions state to `"win"`, shows win overlay.
 
-#### Touch Controls (Phase 3 — Not Yet Implemented)
-- **Swipe to move**: Touch and drag on the canvas or game area. Dominant direction (horizontal/vertical) determines movement direction. Threshold: 20px minimum displacement.
+#### Touch Controls (Phase 3 — Implemented)
+- **Swipe to move**: Touch and drag on the canvas. Dominant direction (horizontal/vertical) determines movement direction. Threshold: 20px minimum displacement.
 - **Continuous movement**: While finger is held, player moves repeatedly (~150ms interval). No need to lift and re-swipe.
 - **Direction change**: Changing swipe direction mid-drag immediately switches movement direction. Previous interval cleared, new one started.
 - **Wall stops**: If the player hits a wall, movement stops but the swipe remains active. Changing direction resumes movement.
-- **Directional arrow**: Small triangle drawn at the edge of the player circle in the current movement direction. Green with subtle glow. Only visible during active swipe.
+- **Directional arrow**: Small filled triangle drawn at the edge of the player circle in the current movement direction. Green with subtle glow. Only visible during active swipe (`touchActive && lastDirection !== null`).
 
-#### Abort (Phase 3 — Not Yet Implemented)
-- **Abort button**: Visible during PLAYING state. Styled as subtle secondary button.
-- **Abort flow**: Click abort → state changes to `"abort"` → all fog lifted → full maze rendered with optimal path in magenta → "Back to Menu" button shown.
-- **No score saved**: Aborting does not save a score.
-- **Back to Menu**: Completes the abort, returns to start screen.
+#### Abort (Phase 3 — Implemented)
+- **Abort button**: In HUD next to move counter during PLAYING state. Styled as subtle secondary button with hover highlight in red.
+- **Abort flow**: Click abort → `showAbortScreen()` → state changes to `"abort"` → `revealAllCells()` → `render()` draws full maze + magenta optimal path → abort overlay shows path length and move count → "Back to Menu" button.
+- **No score saved**: Aborting does not call `saveScore()`.
+- **Back to Menu**: Calls `showStartScreen()`, returns to start screen.
 
-#### Win Screen (Phase 2 — Implemented, Phase 3 updates pending)
-- **Move count**: Displays "Completed in N moves".
-- **Efficiency score** (Phase 3): Displays efficiency percentage = (optimal path / moves) * 100.
-- **Optimal path length** (Phase 3): Shows the number of steps in the shortest path.
-- **Optimal path visualization** (Phase 3): Full maze revealed, magenta path drawn on maze behind the overlay.
+#### Win Screen (Phase 2+3 — Implemented)
+- **Efficiency score**: Displays "Efficiency: X.X%" = (optimal path / moves) * 100.
+- **Move count**: Displays "Moves: N".
+- **Optimal path length**: Displays "Optimal path: N steps".
+- **Optimal path visualization**: Full maze revealed via `revealAllCells()`, magenta path drawn by `drawOptimalPath()` behind the overlay.
 - **Personal best**: "New Personal Best!" shown in gold when the score is the best for that config.
 - **Play Again**: Starts a new game with the same settings.
 - **Back to Menu**: Returns to start screen.
 
-#### Scoreboard (Phase 2 — Implemented, Phase 3 updates pending)
+#### Scoreboard (Phase 2+3 — Implemented)
 - **Configuration selector**: Dropdown for size (10x10, 20x20, 40x40) and radius (1-5). Scores refresh on change.
-- **Score table columns** (Phase 3 update): Rank, efficiency %, moves, maze size, date. Currently: rank, moves, date.
-- **Sort order** (Phase 3 update): Highest efficiency descending, then fewest moves ascending. Currently: fewest moves ascending.
-- **localStorage key format** (Phase 3 update): `amazeng_scores_<W>x<H>_r<R>`. Currently: `maze_scores_<W>x<H>_r<R>`.
-- **Storage format** (Phase 3 update): Entries include `efficiency`, `moves`, `size`, `date`. Currently: `moves`, `date`.
+- **Score table columns**: Rank, efficiency %, moves, maze size, date.
+- **Sort order**: Highest efficiency descending, then fewest moves ascending.
+- **localStorage key format**: `amazeng_scores_<W>x<H>_r<R>` (fresh start — old `maze_scores_*` keys unused).
+- **Storage format**: Entries include `efficiency`, `moves`, `size`, `date`.
 - **Back to Menu**: Returns to start screen.
 
 ### Configuration

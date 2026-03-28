@@ -1,4 +1,4 @@
-/* Maze Explorer — styles */
+/* A-maze-ng — styles */
 
 :root {
   --color-bg: #000000;
@@ -8,6 +8,7 @@
   --color-player: #00ff88;
   --color-text: #ffffff;
   --color-glow: rgba(0, 255, 255, 0.6);
+  --color-path: #ff00ff;
   --color-error: #ff4444;
   box-sizing: border-box;
 }
@@ -28,7 +29,7 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  overflow: hidden;
+  overflow: auto;
 }
 
 main {
@@ -38,13 +39,22 @@ main {
   gap: 0.5rem;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 canvas {
   display: block;
+  touch-action: none;
 }
 
 /* ── HUD ── */
 
 .hud {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
   font-size: 1.25rem;
   letter-spacing: 0.05em;
   color: var(--color-text);
@@ -65,9 +75,6 @@ canvas {
   padding: 1rem;
 }
 
-.screen[hidden] {
-  display: none;
-}
 
 /* ── Start Screen ── */
 
@@ -188,8 +195,7 @@ canvas {
 
 /* ── Action buttons ── */
 
-.start-actions,
-.win-actions {
+.start-actions {
   display: flex;
   gap: 1rem;
 }
@@ -228,33 +234,53 @@ canvas {
   color: var(--color-bg);
 }
 
-/* ── Win Screen Overlay ── */
+/* ── HUD abort button ── */
 
-.win-overlay {
+.abort-btn {
+  font-size: 0.8rem;
+  padding: 0.3rem 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.abort-btn:hover,
+.abort-btn:focus {
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+/* ── Overlays (win + abort) ── */
+
+.overlay {
   position: fixed;
-  inset: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  gap: 1.5rem;
-  background: rgba(0, 0, 0, 0.85);
+  gap: 0.75rem;
+  padding: 1.25rem 1rem;
+  background: rgba(0, 0, 0, 0.92);
+  border-top: 2px solid var(--color-wall);
+  box-shadow: 0 -4px 20px rgba(0, 255, 255, 0.15);
   z-index: 10;
 }
 
-.win-overlay[hidden] {
-  display: none;
-}
 
-.win-overlay h2 {
-  font-size: 2.5rem;
+.overlay h2 {
+  font-size: 1.5rem;
   margin: 0;
   color: var(--color-exit);
-  text-shadow: 0 0 20px var(--color-exit), 0 0 40px var(--color-exit);
+  text-shadow: 0 0 15px var(--color-exit);
 }
 
-.win-overlay p {
-  font-size: 1.25rem;
+.overlay p {
+  font-size: 1rem;
   margin: 0;
 }
 
@@ -264,7 +290,12 @@ canvas {
   text-shadow: 0 0 10px var(--color-exit);
 }
 
-.win-overlay button {
+.overlay-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.overlay button {
   font-size: 1rem;
   padding: 0.6rem 1.5rem;
   border: 2px solid var(--color-wall);
@@ -275,8 +306,8 @@ canvas {
   transition: background 0.15s, color 0.15s;
 }
 
-.win-overlay button:hover,
-.win-overlay button:focus {
+.overlay button:hover,
+.overlay button:focus {
   background: var(--color-wall);
   color: var(--color-bg);
 }
@@ -344,4 +375,112 @@ canvas {
 #no-scores-msg {
   color: rgba(255, 255, 255, 0.5);
   font-style: italic;
+}
+
+/* ── Responsive: mobile < 768px ── */
+
+@media (max-width: 767px) {
+  body {
+    align-items: flex-start;
+    padding-top: 1rem;
+  }
+
+  .screen {
+    max-width: 100%;
+    padding: 0.75rem;
+  }
+
+  .game-title {
+    font-size: 2rem;
+  }
+
+  .preset-buttons {
+    flex-direction: column;
+  }
+
+  .preset-btn {
+    min-height: 44px;
+    font-size: 1rem;
+  }
+
+  .custom-size-inputs {
+    flex-wrap: wrap;
+  }
+
+  .custom-size-inputs input {
+    width: 4rem;
+    min-height: 44px;
+  }
+
+  .radius-selector input[type="range"] {
+    min-height: 44px;
+  }
+
+  .start-actions,
+  .overlay-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .start-actions button,
+  .overlay-actions button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    min-height: 44px;
+    font-size: 1rem;
+  }
+
+  #game-screen {
+    padding: 0.5rem;
+  }
+
+  .hud {
+    font-size: 1.1rem;
+    padding: 0.25rem 0;
+  }
+
+  .abort-btn {
+    font-size: 0.9rem;
+    padding: 0.4rem 1rem;
+    min-height: 44px;
+  }
+
+  canvas {
+    max-width: calc(100vw - 16px);
+  }
+
+  .overlay h2 {
+    font-size: 1.25rem;
+  }
+
+  .overlay p {
+    font-size: 0.9rem;
+  }
+
+  .overlay button {
+    min-height: 44px;
+    width: 100%;
+  }
+
+  .scoreboard-table {
+    font-size: 0.8rem;
+  }
+
+  .scoreboard-table th,
+  .scoreboard-table td {
+    padding: 0.35rem 0.25rem;
+  }
+
+  .scoreboard-config select {
+    min-height: 44px;
+  }
+
+  #sb-back-btn {
+    min-height: 44px;
+    width: 100%;
+  }
 }

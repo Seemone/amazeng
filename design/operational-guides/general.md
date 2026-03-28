@@ -21,7 +21,7 @@
 - `RQ-015` — Vibrant neon visual style — **Phase 1 Complete**
 - `RQ-016` — Canvas glow effects — **Phase 1 Complete**
 - `RQ-017` — Dynamic cell scaling — **Phase 1 Complete**
-- `RQ-028` — Single-file build script — Phase 3
+- `RQ-028` — Single-file build script — **Phase 3 Complete**
 
 ### Interfaces and Usage
 
@@ -41,7 +41,7 @@
 - **Usage**: `sh build.sh` from the repository root
 - **Output**: `amazeng.html` — a single self-contained HTML file with all CSS inlined in a `<style>` tag and all JS inlined in a `<script>` tag
 - **Purpose**: Produces a shareable file that can be sent via messaging apps and opened in any mobile browser
-- **Dependencies**: POSIX sh, `sed`, `cat`, `wc` — no external tools
+- **Dependencies**: POSIX sh, `cat`, `wc` — no external tools
 - **Regeneration**: Run after any change to `index.html`, `style.css`, or `game.js`
 - **Git**: `amazeng.html` should be in `.gitignore` as a generated artifact
 
@@ -60,7 +60,7 @@
 - **Rendering artifacts**: Sub-pixel lines on large mazes — mitigated by `Math.floor` in cell size calculations.
 - **Performance**: If canvas redraw feels sluggish on 80x80, profile `render()` in browser devtools. BFS should complete in <100ms.
 - **CSS property read failure**: Falls back to hardcoded hex values in `COLORS` object.
-- **Build script failure**: Verify `index.html`, `style.css`, `game.js` exist in current directory. Check that `sed` syntax is compatible with current OS.
+- **Build script failure**: Verify `index.html`, `style.css`, `game.js` exist in current directory. Script uses POSIX shell only — no OS-specific syntax.
 
 ### Rollback and Recovery
 

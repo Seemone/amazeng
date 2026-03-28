@@ -11,3 +11,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Generated build output
+amazeng.html
