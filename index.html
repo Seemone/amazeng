@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>A-maze-ng</title>
-  <link rel="stylesheet" href="style.css?v=1774683007">
+  <link rel="stylesheet" href="style.css?v=1774683222">
 </head>
 <body>
   <main id="app">
@@ -65,27 +65,27 @@
       </section>
       <canvas id="maze-canvas" width="800" height="800"></canvas>
       <p class="controls-hint" id="controls-hint"></p>
-    </section>
 
-    <!-- Abort Screen Overlay -->
-    <section id="abort-screen" class="overlay" role="dialog" aria-label="Game aborted" hidden>
-      <h2>Game Aborted</h2>
-      <p id="abort-info"></p>
-      <div class="overlay-actions">
-        <button type="button" id="abort-menu-btn">Back to Menu</button>
+      <!-- Abort info (shown below canvas) -->
+      <div id="abort-screen" class="overlay" role="dialog" aria-label="Game aborted" hidden>
+        <h2>Game Aborted</h2>
+        <p id="abort-info"></p>
+        <div class="overlay-actions">
+          <button type="button" id="abort-menu-btn">Back to Menu</button>
+        </div>
       </div>
-    </section>
 
-    <!-- Win Screen Overlay -->
-    <section id="win-screen" class="overlay" role="dialog" aria-label="You won" hidden>
-      <h2>You Win!</h2>
-      <p id="win-efficiency"></p>
-      <p id="win-moves"></p>
-      <p id="win-optimal"></p>
-      <p id="win-best" class="best-indicator" hidden>New Personal Best!</p>
-      <div class="overlay-actions">
-        <button type="button" id="play-again-btn">Play Again</button>
-        <button type="button" id="back-to-menu-btn">Back to Menu</button>
+      <!-- Win info (shown below canvas) -->
+      <div id="win-screen" class="overlay" role="dialog" aria-label="You won" hidden>
+        <h2>You Win!</h2>
+        <p id="win-efficiency"></p>
+        <p id="win-moves"></p>
+        <p id="win-optimal"></p>
+        <p id="win-best" class="best-indicator" hidden>New Personal Best!</p>
+        <div class="overlay-actions">
+          <button type="button" id="play-again-btn">Play Again</button>
+          <button type="button" id="back-to-menu-btn">Back to Menu</button>
+        </div>
       </div>
     </section>
 
@@ -119,6 +119,6 @@
     </section>
   </main>
   <noscript><p style="color:#fff;text-align:center;padding:2rem">Please open this file in Safari or Chrome to play — this viewer does not support JavaScript.</p></noscript>
-  <script src="game.js?v=1774683007"></script>
+  <script src="game.js?v=1774683222"></script>
 </body>
 </html>

@@ -522,6 +522,8 @@
     winScreen.hidden = true;
     abortScreen.hidden = true;
     scoreboardScreen.hidden = true;
+    document.getElementById("abort-btn").hidden = false;
+    document.getElementById("controls-hint").hidden = false;
   }
 
   function lockScroll() {
@@ -544,6 +546,9 @@
   }
 
   function showWinScreen(moveCount, efficiency, optimalPathLength, isBest) {
+    unlockScroll();
+    document.getElementById("abort-btn").hidden = true;
+    document.getElementById("controls-hint").hidden = true;
     winScreen.hidden = false;
     document.getElementById("win-efficiency").textContent = `Efficiency: ${efficiency.toFixed(1)}%`;
     document.getElementById("win-moves").textContent = `Moves: ${moveCount}`;
@@ -561,6 +566,9 @@
     clearTouchState();
     render();
 
+    unlockScroll();
+    document.getElementById("abort-btn").hidden = true;
+    document.getElementById("controls-hint").hidden = true;
     abortScreen.hidden = false;
     document.getElementById("abort-info").textContent =
       `Optimal path was ${gameState.optimalPathLength} steps. You made ${gameState.moveCount} moves.`;
