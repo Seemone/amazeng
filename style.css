@@ -55,18 +55,6 @@ canvas {
   touch-action: none;
 }
 
-.canvas-wrapper {
-  overflow: auto;
-  max-width: 100%;
-  max-height: calc(100vh - 100px);
-  -webkit-overflow-scrolling: touch;
-}
-
-.canvas-wrapper.scrollable {
-  border: 1px solid rgba(0, 255, 255, 0.2);
-  border-radius: 4px;
-}
-
 .controls-hint {
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.4);
@@ -165,12 +153,6 @@ canvas {
   margin-top: 0.75rem;
 }
 
-.custom-size-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .square-toggle {
   display: flex;
   align-items: center;
@@ -184,25 +166,29 @@ canvas {
   accent-color: var(--color-wall);
 }
 
-.custom-size-inputs label {
+.size-slider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.size-slider label {
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.7);
+  min-width: 3rem;
 }
 
-.custom-size-inputs input {
-  width: 5rem;
-  padding: 0.4rem 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--color-text);
-  font-size: 0.9rem;
+.size-slider input[type="range"] {
+  flex: 1;
+  accent-color: var(--color-wall);
+}
+
+.size-slider output {
+  font-size: 1.1rem;
+  font-weight: bold;
+  min-width: 2rem;
   text-align: center;
-}
-
-.custom-size-inputs input:focus {
-  outline: none;
-  border-color: var(--color-wall);
+  color: var(--color-wall);
 }
 
 .error-message {

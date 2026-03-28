@@ -32,7 +32,6 @@
   const MAX_SCORES = 10;
   const SWIPE_THRESHOLD = 20;
   const MOVE_REPEAT_MS = 150;
-  const MIN_CELL_SIZE = 16;
 
   // ── Game state ──
   let gameState = null;
@@ -183,20 +182,13 @@
     const maxW = window.innerWidth - 40;
     const maxH = window.innerHeight - 100;
     const dim = Math.min(maxW, maxH);
-    const fit = Math.floor(dim / Math.max(gameState.width, gameState.height));
-    return Math.max(fit, MIN_CELL_SIZE);
+    return Math.floor(dim / Math.max(gameState.width, gameState.height));
   }
 
   function resizeCanvas() {
     cellSize = calculateCellSize();
     canvas.width = cellSize * gameState.width;
     canvas.height = cellSize * gameState.height;
-
-    // Enable scrolling if canvas overflows viewport
-    const wrapper = document.getElementById("canvas-wrapper");
-    const overflows = canvas.width > (window.innerWidth - 20) ||
-      canvas.height > (window.innerHeight - 100);
-    wrapper.classList.toggle("scrollable", overflows);
   }
 
   function render() {
@@ -735,26 +727,32 @@
     const checkbox = document.getElementById("square-check");
     const widthInput = document.getElementById("custom-width");
     const heightInput = document.getElementById("custom-height");
+    const widthOutput = document.getElementById("custom-width-value");
+    const heightOutput = document.getElementById("custom-height-value");
+    const heightSlider = document.getElementById("height-slider");
 
-    function syncHeight() {
+    function updateVisibility() {
+      heightSlider.hidden = checkbox.checked;
       if (checkbox.checked) {
         heightInput.value = widthInput.value;
+        heightOutput.textContent = widthInput.value;
       }
     }
 
-    function syncWidth() {
-      if (checkbox.checked) {
-        widthInput.value = heightInput.value;
-      }
-    }
-
-    widthInput.addEventListener("input", syncHeight);
-    heightInput.addEventListener("input", syncWidth);
-    checkbox.addEventListener("change", () => {
+    widthInput.addEventListener("input", () => {
+      widthOutput.textContent = widthInput.value;
       if (checkbox.checked) {
         heightInput.value = widthInput.value;
+        heightOutput.textContent = widthInput.value;
       }
     });
+
+    heightInput.addEventListener("input", () => {
+      heightOutput.textContent = heightInput.value;
+    });
+
+    checkbox.addEventListener("change", updateVisibility);
+    updateVisibility();
   }
 
   function setupControlsHint() {
