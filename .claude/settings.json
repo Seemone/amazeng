@@ -1,7 +1,19 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node run.js /tmp/playwright-test-maze-phase2.js)"
+      "Bash(node run.js /tmp/playwright-test-maze-phase2.js)",
+      "Bash(sh build.sh)",
+      "Bash(sh /Users/elf/repos/browsergame/build.sh)",
+      "Bash(node run.js \":*)",
+      "Read(//tmp/**)",
+      "Read(//private/tmp/**)",
+      "Bash(gh auth:*)",
+      "Bash(gh repo:*)",
+      "Bash(git remote:*)",
+      "Bash(git push:*)",
+      "Bash(gh api:*)",
+      "Bash(git merge:*)",
+      "Bash(chmod +x /Users/elf/repos/browsergame/deploy.sh)"
     ]
   }
 }

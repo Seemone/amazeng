@@ -524,9 +524,18 @@
     scoreboardScreen.hidden = true;
   }
 
+  function lockScroll() {
+    document.body.classList.add("game-active");
+  }
+
+  function unlockScroll() {
+    document.body.classList.remove("game-active");
+  }
+
   function showStartScreen() {
     hideAllScreens();
     clearTouchState();
+    unlockScroll();
     startScreen.hidden = false;
     if (gameState) {
       gameState.state = "start";
@@ -560,11 +569,13 @@
 
   function showGameScreen() {
     hideAllScreens();
+    lockScroll();
     gameScreen.hidden = false;
   }
 
   function showScoreboardScreen() {
     hideAllScreens();
+    unlockScroll();
     scoreboardScreen.hidden = false;
     refreshScoreboard();
     document.getElementById("sb-back-btn").focus();
