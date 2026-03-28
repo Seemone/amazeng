@@ -527,11 +527,13 @@
   }
 
   function lockScroll() {
-    document.body.classList.add("game-active");
+    document.documentElement.classList.add("game-active");
   }
 
   function unlockScroll() {
-    document.body.classList.remove("game-active");
+    document.documentElement.classList.remove("game-active");
+    // iOS needs a nudge to re-enable scrolling
+    window.scrollTo(0, 0);
   }
 
   function showStartScreen() {
