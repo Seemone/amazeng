@@ -21,10 +21,16 @@
           <button type="button" class="preset-btn" data-width="custom" data-height="custom" id="custom-preset-btn">Custom</button>
         </div>
         <div class="custom-size-inputs" id="custom-size-inputs" hidden>
-          <label for="custom-width">Width:</label>
-          <input type="number" id="custom-width" min="2" max="80" value="20">
-          <label for="custom-height">Height:</label>
-          <input type="number" id="custom-height" min="2" max="80" value="20">
+          <div class="custom-size-row">
+            <label for="custom-width">Width:</label>
+            <input type="number" id="custom-width" min="2" max="80" value="20">
+            <label for="custom-height">Height:</label>
+            <input type="number" id="custom-height" min="2" max="80" value="20">
+          </div>
+          <label class="square-toggle">
+            <input type="checkbox" id="square-check" checked>
+            Square maze
+          </label>
         </div>
         <p class="error-message" id="size-error" role="alert" hidden></p>
       </fieldset>
@@ -50,7 +56,10 @@
         <span id="hud-moves"></span>
         <button type="button" id="abort-btn" class="abort-btn">Abort</button>
       </section>
-      <canvas id="maze-canvas" width="800" height="800"></canvas>
+      <div class="canvas-wrapper" id="canvas-wrapper">
+        <canvas id="maze-canvas" width="800" height="800"></canvas>
+      </div>
+      <p class="controls-hint" id="controls-hint"></p>
     </section>
 
     <!-- Abort Screen Overlay -->

@@ -55,6 +55,25 @@ canvas {
   touch-action: none;
 }
 
+.canvas-wrapper {
+  overflow: auto;
+  max-width: 100%;
+  max-height: calc(100vh - 100px);
+  -webkit-overflow-scrolling: touch;
+}
+
+.canvas-wrapper.scrollable {
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.controls-hint {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0.25rem 0 0;
+  text-align: center;
+}
+
 /* ── HUD ── */
 
 .hud {
@@ -141,9 +160,28 @@ canvas {
 
 .custom-size-inputs {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 0.5rem;
   margin-top: 0.75rem;
+}
+
+.custom-size-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.square-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+}
+
+.square-toggle input[type="checkbox"] {
+  accent-color: var(--color-wall);
 }
 
 .custom-size-inputs label {

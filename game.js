@@ -32,6 +32,7 @@
   const MAX_SCORES = 10;
   const SWIPE_THRESHOLD = 20;
   const MOVE_REPEAT_MS = 150;
+  const MIN_CELL_SIZE = 16;
 
   // ── Game state ──
   let gameState = null;
@@ -182,13 +183,20 @@
     const maxW = window.innerWidth - 40;
     const maxH = window.innerHeight - 100;
     const dim = Math.min(maxW, maxH);
-    return Math.floor(dim / Math.max(gameState.width, gameState.height));
+    const fit = Math.floor(dim / Math.max(gameState.width, gameState.height));
+    return Math.max(fit, MIN_CELL_SIZE);
   }
 
   function resizeCanvas() {
     cellSize = calculateCellSize();
     canvas.width = cellSize * gameState.width;
     canvas.height = cellSize * gameState.height;
+
+    // Enable scrolling if canvas overflows viewport
+    const wrapper = document.getElementById("canvas-wrapper");
+    const overflows = canvas.width > (window.innerWidth - 20) ||
+      canvas.height > (window.innerHeight - 100);
+    wrapper.classList.toggle("scrollable", overflows);
   }
 
   function render() {
@@ -723,6 +731,42 @@
     });
   }
 
+  function setupSquareCheckbox() {
+    const checkbox = document.getElementById("square-check");
+    const widthInput = document.getElementById("custom-width");
+    const heightInput = document.getElementById("custom-height");
+
+    function syncHeight() {
+      if (checkbox.checked) {
+        heightInput.value = widthInput.value;
+      }
+    }
+
+    function syncWidth() {
+      if (checkbox.checked) {
+        widthInput.value = heightInput.value;
+      }
+    }
+
+    widthInput.addEventListener("input", syncHeight);
+    heightInput.addEventListener("input", syncWidth);
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) {
+        heightInput.value = widthInput.value;
+      }
+    });
+  }
+
+  function setupControlsHint() {
+    const hint = document.getElementById("controls-hint");
+    const hasTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    if (hasTouch) {
+      hint.textContent = "Drag to move";
+    } else {
+      hint.textContent = "Use WASD or arrow keys to move";
+    }
+  }
+
   // ── Bootstrap ──
 
   function setup() {
@@ -765,6 +809,7 @@
     // Start screen controls
     setupPresetButtons();
     setupRadiusSlider();
+    setupSquareCheckbox();
 
     document.getElementById("start-btn").addEventListener("click", handleStartClick);
     document.getElementById("scoreboard-btn").addEventListener("click", showScoreboardScreen);
@@ -794,7 +839,8 @@
     document.getElementById("sb-size").addEventListener("change", refreshScoreboard);
     document.getElementById("sb-radius").addEventListener("change", refreshScoreboard);
 
-    // Show start screen
+    // Controls hint + show start screen
+    setupControlsHint();
     showStartScreen();
   }
 
