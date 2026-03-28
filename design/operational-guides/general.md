@@ -43,7 +43,30 @@
 - **Purpose**: Produces a shareable file that can be sent via messaging apps and opened in any mobile browser
 - **Dependencies**: POSIX sh, `cat`, `wc` — no external tools
 - **Regeneration**: Run after any change to `index.html`, `style.css`, or `game.js`
-- **Git**: `amazeng.html` should be in `.gitignore` as a generated artifact
+- **Git**: `amazeng.html` is in `.gitignore` as a generated artifact
+
+### Deploy Script (Phase 3)
+
+- **Location**: `deploy.sh` in repository root
+- **Usage**: `sh deploy.sh` from the repository root
+- **What it does**:
+  1. Cleans any stale cache-bust stamps from `index.html`
+  2. Runs `build.sh` to produce `amazeng.html`
+  3. Adds `?v=<timestamp>` query strings to CSS and JS references in `index.html`
+  4. Commits all changes (on current branch; merges to main if on a feature branch)
+  5. Pushes to `origin main`
+  6. Restores clean references in the working copy
+  7. Polls GitHub Pages API every 5 seconds until status is `"built"` (timeout: 150s)
+  8. Prints the live URL on success
+- **Dependencies**: POSIX sh, `sed`, `git`, `gh` (GitHub CLI, authenticated)
+- **Live URL**: `https://seemone.github.io/amazeng/`
+- **Cache-busting**: Timestamps on CSS/JS references ensure browsers fetch fresh files after each deploy. The meta tags in `index.html` (`Cache-Control: no-cache, no-store, must-revalidate`) prevent stale HTML.
+
+### CSS Architecture Notes (Phase 3)
+
+- **`[hidden]` override**: Global `[hidden] { display: none !important }` ensures the HTML5 `hidden` attribute always works, even on elements with explicit `display` values like `display: flex`.
+- **`html.game-active`**: Applied during gameplay to lock scrolling (`overflow: hidden; height: 100%` on html and body). Removed on game end with `window.scrollTo(0, 0)` nudge for iOS.
+- **`<noscript>` fallback**: Displays a message directing users to Safari/Chrome when JavaScript is unavailable (e.g., Telegram's in-app file viewer).
 
 ### Verification and Smoke Tests
 

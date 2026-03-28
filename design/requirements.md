@@ -91,13 +91,25 @@
 - **RQ-027** Game is rebranded to "A-maze-ng" across page title, start screen, and all references; localStorage uses fresh key prefix `amazeng_scores_*`
   - **Tags**: `guide:gameplay`, `ui`, `branding`
 
-- **RQ-028** A build script (`build.sh`) produces a single self-contained `amazeng.html` file with inlined CSS and JS for easy sharing
-  - **Tags**: `guide:general`, `distribution`, `build`
+- **RQ-028** A build script (`build.sh`) produces a single self-contained `amazeng.html` file with inlined CSS and JS for easy sharing; a deploy script (`deploy.sh`) builds, adds cache-busting query strings, commits, pushes to GitHub, and waits for GitHub Pages deployment
+  - **Tags**: `guide:general`, `distribution`, `build`, `deployment`
+
+- **RQ-029** Custom maze size selection uses range sliders (scrollbar-style) with live value display; a "Square maze" checkbox (default on) links width and height and hides the height slider when enabled
+  - **Tags**: `guide:gameplay`, `ui`, `configuration`
+
+- **RQ-030** A context-aware controls hint is displayed during gameplay: "Drag to move" on touch devices, "Use WASD or arrow keys to move" on keyboard devices
+  - **Tags**: `guide:gameplay`, `ui`, `input`
+
+- **RQ-031** Win and abort result panels appear inline below the canvas (not as fixed overlays); the page becomes scrollable when the game ends so the full maze and results are always accessible
+  - **Tags**: `guide:gameplay`, `ui`, `mobile`
+
+- **RQ-032** Page scrolling is locked during gameplay to prevent interference with swipe controls; scrolling is re-enabled when the game ends or returns to menu
+  - **Tags**: `guide:gameplay`, `mobile`, `input`
 
 ## Non-Functional Requirements
 
 - **Performance**: Maze generation < 1 second for 80x80. Canvas redraw < 16ms per move. BFS pathfinding < 100ms for 80x80.
-- **Compatibility**: Works in Chrome, Firefox, Safari, Edge (latest two major versions). Mobile Safari and Chrome on iOS/Android.
+- **Compatibility**: Works in Chrome, Firefox, Safari, Edge (latest two major versions). Mobile Safari and Chrome on iOS/Android. Graceful degradation with `<noscript>` fallback for environments without JavaScript.
 - **Dependencies**: Zero external dependencies. No build step for development. Optional build script for distribution.
-- **Deployment**: Self-contained — open `index.html` in a browser to play. Single-file `amazeng.html` for sharing.
-- **Maintainability**: Single JS file with clear function separation. CSS custom properties for theming.
+- **Deployment**: Hosted on GitHub Pages at `https://seemone.github.io/amazeng/`. Also playable by opening `index.html` locally or sharing the self-contained `amazeng.html`. Cache-control meta tags prevent stale browser caches.
+- **Maintainability**: Single JS file with clear function separation. CSS custom properties for theming. Global `[hidden] { display: none !important }` rule ensures HTML5 hidden attribute is never overridden by component styles.

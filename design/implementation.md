@@ -30,11 +30,12 @@
 
 | File | Responsibility | Key Functions | Entry Points |
 | ---- | -------------- | ------------- | ------------ |
-| `index.html` | Page shell, canvas element, start/win/abort screen markup, touch-friendly meta | N/A | Browser load |
-| `style.css` | Layout, UI styling, CSS custom properties for color palette, responsive breakpoints | N/A | Linked from HTML |
-| `game.js` | All game logic | `generateMaze`, `findShortestPath`, `render`, `drawOptimalPath`, `handleKeydown`, `handleTouchStart`, `handleTouchMove`, `handleTouchEnd`, `revealCells`, `checkWin`, `saveScore`, `loadScores`, `initGame`, `showStartScreen`, `showWinScreen`, `showAbortScreen` | `DOMContentLoaded` event |
-| `build.sh` | Inlines CSS and JS into single HTML file | N/A | Manual shell execution |
-| `amazeng.html` | Generated distribution file (not checked in) | N/A | Browser load |
+| `index.html` | Page shell, canvas element, start/win/abort screen markup, touch-friendly meta, cache-control meta, noscript fallback | N/A | Browser load |
+| `style.css` | Layout, UI styling, CSS custom properties for color palette, responsive breakpoints, `[hidden]` override, `html.game-active` scroll lock | N/A | Linked from HTML |
+| `game.js` | All game logic | `generateMaze`, `findShortestPath`, `render`, `drawOptimalPath`, `drawDirectionArrow`, `attemptMove`, `handleKeydown`, `handleTouchStart`, `handleTouchMove`, `handleTouchEnd`, `revealCells`, `checkWin`, `saveScore`, `loadScores`, `initGame`, `showStartScreen`, `showWinScreen`, `showAbortScreen`, `setupSquareCheckbox`, `setupControlsHint`, `lockScroll`, `unlockScroll` | `DOMContentLoaded` event |
+| `build.sh` | Inlines CSS and JS into single HTML file | N/A | Manual: `sh build.sh` |
+| `deploy.sh` | Build, cache-bust, commit, push, wait for GitHub Pages deployment | N/A | Manual: `sh deploy.sh` |
+| `amazeng.html` | Generated distribution file (gitignored) | N/A | Browser load |
 
 ### Data & Schema Notes
 
@@ -164,13 +165,13 @@ function render():
 | -------- | ---------- | ------------------ | ---- | --------------- | ------------ |
 | `PHASE-01` | `design/phases/phase-01-core-engine.md` | `design/summaries/phase-01-core-engine-summary.md` | Playable maze: generation, rendering, movement, fog of war, win detection | `RQ-003`, `RQ-004`, `RQ-005`, `RQ-006`, `RQ-007`, `RQ-008`, `RQ-009`, `RQ-010`, `RQ-011`, `RQ-015`, `RQ-016`, `RQ-017` | None |
 | `PHASE-02` | `design/phases/phase-02-ui-and-scoring.md` | `design/summaries/phase-02-ui-and-scoring-summary.md` | Start screen, win screen, settings UI, scoreboard, localStorage persistence | `RQ-001`, `RQ-002`, `RQ-012`, `RQ-013`, `RQ-014`, `RQ-018` | `PHASE-01` |
-| `PHASE-03` | `design/phases/phase-03-mobile-and-polish.md` | `design/summaries/phase-03-mobile-and-polish-summary.md` | Abort game, BFS pathfinding, efficiency scoring, mobile touch/swipe, responsive layout, rebrand, build script | `RQ-019`, `RQ-020`, `RQ-021`, `RQ-022`, `RQ-023`, `RQ-024`, `RQ-025`, `RQ-026`, `RQ-027`, `RQ-028` | `PHASE-02` |
+| `PHASE-03` | `design/phases/phase-03-mobile-and-polish.md` | `design/summaries/phase-03-mobile-and-polish-summary.md` | Abort game, BFS pathfinding, efficiency scoring, mobile touch/swipe, responsive layout, scroll management, range sliders, square checkbox, controls hint, inline overlays, rebrand, build/deploy scripts, cache-busting | `RQ-019`, `RQ-020`, `RQ-021`, `RQ-022`, `RQ-023`, `RQ-024`, `RQ-025`, `RQ-026`, `RQ-027`, `RQ-028`, `RQ-029`, `RQ-030`, `RQ-031`, `RQ-032` | `PHASE-02` |
 
 ### Operational Guide Coverage
 
 | Guide Topic | Guide File | Requirement IDs | Notes |
 | ----------- | ---------- | --------------- | ----- |
-| `gameplay` | `design/operational-guides/gameplay.md` | `RQ-001`, `RQ-002`, `RQ-005`, `RQ-006`, `RQ-007`, `RQ-008`, `RQ-009`, `RQ-010`, `RQ-011`, `RQ-012`, `RQ-013`, `RQ-014`, `RQ-018`, `RQ-019`, `RQ-020`, `RQ-021`, `RQ-022`, `RQ-023`, `RQ-024`, `RQ-025`, `RQ-026`, `RQ-027` | All gameplay-facing requirements |
+| `gameplay` | `design/operational-guides/gameplay.md` | `RQ-001`, `RQ-002`, `RQ-005`, `RQ-006`, `RQ-007`, `RQ-008`, `RQ-009`, `RQ-010`, `RQ-011`, `RQ-012`, `RQ-013`, `RQ-014`, `RQ-018`, `RQ-019`, `RQ-020`, `RQ-021`, `RQ-022`, `RQ-023`, `RQ-024`, `RQ-025`, `RQ-026`, `RQ-027`, `RQ-029`, `RQ-030`, `RQ-031`, `RQ-032` | All gameplay-facing requirements |
 | `general` | `design/operational-guides/general.md` | `RQ-003`, `RQ-004`, `RQ-015`, `RQ-016`, `RQ-017`, `RQ-028` | Internal/rendering requirements and build tooling |
 
 ### Testing Plan

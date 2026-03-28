@@ -14,7 +14,7 @@
 
 ### Summary Scope
 - Phase ID: `PHASE-03`
-- Requirement IDs completed: `RQ-019`, `RQ-020`, `RQ-021`, `RQ-022`, `RQ-023`, `RQ-024`, `RQ-025`, `RQ-026`, `RQ-027`, `RQ-028`
+- Requirement IDs completed: `RQ-019`, `RQ-020`, `RQ-021`, `RQ-022`, `RQ-023`, `RQ-024`, `RQ-025`, `RQ-026`, `RQ-027`, `RQ-028`, `RQ-029`, `RQ-030`, `RQ-031`, `RQ-032`
 - Operational guide topics touched: `gameplay`, `general`
 
 ### What Changed
@@ -80,8 +80,8 @@
 - Build script uses shell `while read` instead of `awk`/`sed` for multiline reliability
 
 ### Public Interfaces and Contracts
-- New functions: `findShortestPath()`, `drawOptimalPath()`, `drawDirectionArrow()`, `attemptMove()`, `handleTouchStart()`, `handleTouchMove()`, `handleTouchEnd()`, `showAbortScreen()`, `revealAllCells()`, `clearTouchState()`, `dominantDirection()`
-- Updated functions: `render()` (shows all cells + path on win/abort), `saveScore()` (efficiency parameter), `showWinScreen()` (efficiency + optimal path params), `refreshScoreboard()` (new columns), `initGame()` (BFS computation), `setup()` (touch listeners, abort/resize handlers)
+- New functions: `findShortestPath()`, `drawOptimalPath()`, `drawDirectionArrow()`, `attemptMove()`, `handleTouchStart()`, `handleTouchMove()`, `handleTouchEnd()`, `showAbortScreen()`, `revealAllCells()`, `clearTouchState()`, `dominantDirection()`, `setupSquareCheckbox()`, `setupControlsHint()`, `lockScroll()`, `unlockScroll()`
+- Updated functions: `render()` (shows all cells + path on win/abort), `saveScore()` (efficiency parameter), `showWinScreen()` (efficiency + optimal path params, unlocks scroll), `refreshScoreboard()` (new columns), `initGame()` (BFS computation), `setup()` (touch listeners, abort/resize handlers, square checkbox, controls hint), `showGameScreen()` (locks scroll), `showStartScreen()` (unlocks scroll), `hideAllScreens()` (resets abort btn + hint visibility)
 
 ### Data Model Changes
 - `gameState` gains: `optimalPath`, `optimalPathLength`
@@ -102,7 +102,11 @@
 | RQ-025 | Complete | Pending Manual | Manual: directional arrow during swipe | Triangle at player edge in swipe direction |
 | RQ-026 | Complete | Pending Manual | Manual: responsive layout at 375px, 768px, 1200px | 767px breakpoint, 44px tap targets |
 | RQ-027 | Complete | Pending Manual | Manual: rebrand title + localStorage keys | "A-maze-ng" everywhere, `amazeng_scores_*` |
-| RQ-028 | Complete | Pending Manual | Manual: build.sh produces working amazeng.html | POSIX shell, ~36KB output |
+| RQ-028 | Complete | Pending Manual | Manual: build.sh + deploy.sh produce and publish | build.sh ~39KB; deploy.sh cache-busts + pushes |
+| RQ-029 | Complete | Pending Manual | Manual: range sliders, square checkbox syncs dimensions | Sliders 2-80, square default on hides height |
+| RQ-030 | Complete | Pending Manual | Manual: touch → "Drag to move", desktop → "Use WASD..." | Touch detection via ontouchstart/maxTouchPoints |
+| RQ-031 | Complete | Pending Manual | Manual: results below canvas, page scrollable after game | Overlays are inline flow inside game-screen |
+| RQ-032 | Complete | Pending Manual | Manual: no scroll during play, scroll after win/abort | html.game-active class, iOS scrollTo nudge |
 
 ### Risks, Deviations, and Follow-up
 - Touch event handling may require tuning of swipe threshold and movement repeat rate on real devices

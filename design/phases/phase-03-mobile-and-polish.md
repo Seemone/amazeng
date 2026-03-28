@@ -20,9 +20,9 @@
 **Phase Summary**: `design/summaries/phase-03-mobile-and-polish-summary.md`
 
 ### Phase Scope
-- Features included: Abort game button with optimal path reveal, BFS shortest path computation, efficiency scoring (shortest/moves as percentage), optimal path rendering (magenta), scoreboard overhaul (efficiency ranking, maze size column), touch/swipe controls (continuous movement, direction change, wall stops), directional arrow indicator, responsive layout (6"+ screens), rebrand to "A-maze-ng", single-file build script
-- Requirement IDs: `RQ-019`, `RQ-020`, `RQ-021`, `RQ-022`, `RQ-023`, `RQ-024`, `RQ-025`, `RQ-026`, `RQ-027`, `RQ-028`
-- Deliverables: Updated `index.html` (abort screen markup, responsive meta, rebrand), updated `style.css` (responsive breakpoints, touch targets, abort screen, path styling), updated `game.js` (BFS, touch handler, efficiency scoring, abort flow, rebrand), new `build.sh`, generated `amazeng.html`
+- Features included: Abort game button with optimal path reveal, BFS shortest path computation, efficiency scoring (shortest/moves as percentage), optimal path rendering (magenta), scoreboard overhaul (efficiency ranking, maze size column), touch/swipe controls (continuous movement, direction change, wall stops), directional arrow indicator, responsive layout (6"+ screens), scroll lock during gameplay, inline win/abort panels (scrollable on game end), range sliders for custom size, square maze checkbox, controls hint text, rebrand to "A-maze-ng", build/deploy scripts, cache-busting, noscript fallback, GitHub Pages hosting
+- Requirement IDs: `RQ-019`, `RQ-020`, `RQ-021`, `RQ-022`, `RQ-023`, `RQ-024`, `RQ-025`, `RQ-026`, `RQ-027`, `RQ-028`, `RQ-029`, `RQ-030`, `RQ-031`, `RQ-032`
+- Deliverables: Updated `index.html` (inline overlays, range sliders, square checkbox, cache-control meta, noscript), updated `style.css` (responsive breakpoints, touch targets, scroll lock, hidden override, inline overlay), updated `game.js` (BFS, touch handler, efficiency scoring, abort flow, scroll management, square checkbox, controls hint, rebrand), new `build.sh`, new `deploy.sh`, generated `amazeng.html`
 - Dependencies: `PHASE-02` (UI and scoring must be functional)
 
 ### Cross-References

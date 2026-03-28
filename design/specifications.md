@@ -15,7 +15,7 @@
 
 ### Deployment Architecture
 
-Static files served from any HTTP server or opened directly as `file://`. No build, no bundler, no server-side logic.
+Primary deployment: GitHub Pages at `https://seemone.github.io/amazeng/`. Also works from any HTTP server or opened directly as `file://`. No bundler, no server-side logic.
 
 ```
 browsergame/
@@ -23,8 +23,15 @@ browsergame/
   style.css
   game.js
   build.sh          # produces amazeng.html
-  amazeng.html      # generated — single-file distribution
+  deploy.sh         # build + cache-bust + push + wait for GitHub Pages
+  amazeng.html      # generated — single-file distribution (gitignored)
 ```
+
+### Cache Strategy
+
+- `index.html` includes HTTP cache-control meta tags (`no-cache, no-store, must-revalidate`) to prevent stale HTML.
+- `deploy.sh` appends `?v=<timestamp>` query strings to `style.css` and `game.js` references before committing, ensuring browsers fetch fresh CSS/JS on each deploy. Working copy is restored to clean references after push.
+- `amazeng.html` is self-contained (inlined CSS/JS) and not affected by cache-busting — it is always rebuilt from clean sources.
 
 ## User Experience Architecture
 
@@ -52,6 +59,7 @@ browsergame/
 
 - Invalid custom size: inline message next to input fields, game does not start
 - localStorage unavailable: game plays normally, scores silently not persisted
+- JavaScript unavailable (e.g., Telegram in-app viewer): `<noscript>` message directs user to open in Safari or Chrome
 
 ## Component Design
 
@@ -74,8 +82,8 @@ START_SCREEN ──[Start]──> PLAYING ──[Reach Exit]──> WIN_SCREEN
 States:
 - **START_SCREEN**: Settings UI visible. Canvas may show decorative background.
 - **PLAYING**: Canvas renders maze, player, exit, fog. Keyboard/touch input active. HUD shows move count. Abort button visible.
-- **WIN_SCREEN**: Overlay with efficiency score, move count, optimal path length, personal best status, navigation buttons. Maze fully revealed with optimal path drawn in magenta.
-- **ABORT_SCREEN**: Full maze revealed with optimal path drawn in magenta. "Back to Menu" button to complete abort.
+- **WIN_SCREEN**: Results panel shown inline below the canvas with efficiency score, move count, optimal path length, personal best status, navigation buttons. Maze fully revealed with optimal path drawn in magenta. Page scroll unlocked so user can view full maze and results.
+- **ABORT_SCREEN**: Full maze revealed with optimal path drawn in magenta. Results panel shown inline below canvas with path info and "Back to Menu" button. Page scroll unlocked.
 
 ### Module Breakdown (within game.js)
 
@@ -366,11 +374,35 @@ EOF_JS
 echo "Built amazeng.html ($(wc -c < amazeng.html | tr -d ' ') bytes)"
 ```
 
+### Custom Size Input
+
+Custom maze dimensions use range sliders (not number inputs) for better mobile usability:
+- Width slider: range 2-80, default 20, with live `<output>` display
+- Height slider: same range, shown only when "Square maze" is unchecked
+- "Square maze" checkbox: checked by default. When enabled, hides the height slider and syncs height to width value. Unchecking reveals the height slider for independent control.
+
+### Controls Hint
+
+A context-aware hint is displayed below the canvas during gameplay:
+- Touch-capable devices (`"ontouchstart" in window || navigator.maxTouchPoints > 0`): "Drag to move"
+- Non-touch devices: "Use WASD or arrow keys to move"
+- Hidden when win/abort panel appears.
+
+### Scroll Management
+
+- **During PLAYING**: `html.game-active` class sets `overflow: hidden; height: 100%` on `<html>` and `<body>`, preventing page scroll that would interfere with swipe controls.
+- **On game end (WIN/ABORT)**: Class removed, `window.scrollTo(0, 0)` called to nudge iOS into recognizing scroll is re-enabled. Page becomes scrollable so the inline results panel below the canvas is reachable.
+- **On menu/scoreboard screens**: No scroll lock; body uses default `overflow: auto`.
+
+### CSS Hidden Attribute
+
+Global rule `[hidden] { display: none !important }` ensures the HTML5 `hidden` attribute is never overridden by component-level `display` values (e.g., `display: flex` on `.custom-size-inputs`). All screen/element visibility toggles use the `hidden` property in JS.
+
 ## Cross-Cutting Concerns
 
 - **Performance**: Iterative maze generation avoids stack overflow. BFS uses parent-pointer reconstruction to avoid path copying. Canvas redraw scoped to changed state (or full redraw kept under 16ms by simplicity of drawing).
 - **Keyboard conflict prevention**: `preventDefault()` on arrow keys during PLAYING state to avoid page scroll.
-- **Touch conflict prevention**: `preventDefault()` on touch events during PLAYING state to avoid scroll/zoom.
+- **Touch conflict prevention**: `preventDefault()` on touch events during PLAYING state to avoid scroll/zoom. `html.game-active` scroll lock prevents background scrolling during swipe.
 - **Responsive canvas**: Canvas dimensions recalculated on window resize and orientation change, cell size recomputed, full redraw triggered.
-- **Graceful degradation**: If localStorage is unavailable, catch errors silently — game functions without persistence.
-- **Distribution**: `build.sh` produces `amazeng.html` which is fully self-contained and can be shared as a file attachment.
+- **Graceful degradation**: If localStorage is unavailable, catch errors silently — game functions without persistence. If JavaScript is unavailable, `<noscript>` message shown.
+- **Distribution**: `build.sh` produces `amazeng.html` which is fully self-contained. `deploy.sh` publishes to GitHub Pages with cache-busting.

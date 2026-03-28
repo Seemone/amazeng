@@ -38,17 +38,23 @@
 - `RQ-025` — Directional arrow indicator — **Phase 3 Complete**
 - `RQ-026` — Responsive layout (6"+ screens) — **Phase 3 Complete**
 - `RQ-027` — Rebrand to "A-maze-ng" — **Phase 3 Complete**
+- `RQ-029` — Custom size range sliders with square checkbox — **Phase 3 Complete**
+- `RQ-030` — Context-aware controls hint — **Phase 3 Complete**
+- `RQ-031` — Inline win/abort panels, scrollable on game end — **Phase 3 Complete**
+- `RQ-032` — Scroll lock during gameplay — **Phase 3 Complete**
 
 ### Interfaces and Usage
 
-#### Start Screen (Phase 2 — Implemented)
+#### Start Screen (Phase 2+3 — Implemented)
 - **Size presets**: Four buttons — Small (10x10), Medium (20x20), Large (40x40), Custom. Only one selected at a time (exclusive toggle). Medium selected by default.
-- **Custom size**: Clicking "Custom" reveals width/height number inputs (min 2, max 80). Invalid values show inline red error text, game does not start.
+- **Custom size**: Clicking "Custom" reveals range sliders for width and height (2-80) with live `<output>` value displays. "Square maze" checkbox (default on) hides the height slider and syncs both dimensions. Unchecking reveals the height slider. Invalid values show inline red error text, game does not start.
 - **Visibility radius**: Range slider (1-5, default 2) with live `<output>` display showing current value.
-- **Start Game**: Validates settings, then calls `initGame(width, height, radius)`. Transitions to PLAYING state.
+- **Start Game**: Validates settings, then calls `initGame(width, height, radius)`. Transitions to PLAYING state. Scroll is locked.
 - **View Scoreboard**: Navigates to scoreboard screen.
 
-#### Gameplay (Phase 1 — Implemented)
+#### Gameplay (Phase 1+3 — Implemented)
+- **Controls hint**: Below the canvas, shows "Drag to move" on touch devices or "Use WASD or arrow keys to move" on desktop. Auto-detected via `ontouchstart`/`maxTouchPoints`. Hidden on game end.
+- **Scroll lock**: `html.game-active` class prevents page scrolling during gameplay. Removed on win/abort/menu.
 - **Controls (desktop)**: Arrow keys (Up/Down/Left/Right) and WASD. One keypress = one cell move. `preventDefault()` blocks page scroll during gameplay.
 - **Wall collision**: Moving toward a wall has no effect; move counter does not increment. Wall presence checked via `grid[row][col].walls[direction]`.
 - **Fog of war**: All cells start with `revealed: false`. Player movement reveals cells within visibility radius using Manhattan distance (`|dr| + |dc| <= radius`). Reveal is permanent.
@@ -70,10 +76,11 @@
 - **Back to Menu**: Calls `showStartScreen()`, returns to start screen.
 
 #### Win Screen (Phase 2+3 — Implemented)
+- **Inline panel**: Results appear below the canvas in normal document flow (not a fixed overlay). Page scroll is unlocked so the user can see the full maze with optimal path and the results panel.
 - **Efficiency score**: Displays "Efficiency: X.X%" = (optimal path / moves) * 100.
 - **Move count**: Displays "Moves: N".
 - **Optimal path length**: Displays "Optimal path: N steps".
-- **Optimal path visualization**: Full maze revealed via `revealAllCells()`, magenta path drawn by `drawOptimalPath()` behind the overlay.
+- **Optimal path visualization**: Full maze revealed via `revealAllCells()`, magenta path drawn by `drawOptimalPath()` on the canvas.
 - **Personal best**: "New Personal Best!" shown in gold when the score is the best for that config.
 - **Play Again**: Starts a new game with the same settings.
 - **Back to Menu**: Returns to start screen.
