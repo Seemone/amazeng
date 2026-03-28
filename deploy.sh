@@ -5,14 +5,14 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# Build the single-file distribution (from clean sources)
+sh build.sh
+
 # Add cache-busting query strings to CSS and JS references
 STAMP=$(date +%s)
 sed -i.bak "s|href=\"style.css\"|href=\"style.css?v=$STAMP\"|" index.html
 sed -i.bak "s|src=\"game.js\"|src=\"game.js?v=$STAMP\"|" index.html
 rm -f index.html.bak
-
-# Build the single-file distribution
-sh build.sh
 
 # Ensure we're on a branch that can push to main
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
@@ -32,6 +32,9 @@ else
 fi
 
 git push origin main
+
+# Restore index.html to clean state (no cache-bust stamps in source)
+git checkout HEAD~1 -- index.html 2>/dev/null || true
 
 # Wait for GitHub Pages deployment
 echo "Waiting for GitHub Pages to deploy..."
